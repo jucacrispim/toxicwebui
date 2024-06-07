@@ -8,8 +8,6 @@ builders:
         extra_indexes:
           - https://pypi.poraodojuca.dev
 
-
-
     steps:
 
       - name: Unit tests & coverage
