@@ -19,3 +19,13 @@ builders:
         packages:
           - chromium-driver
           - xvfb
+
+      - name: python-venv
+        pyversion: python3.11
+        extra_indexes:
+          - https://pypi.poraodojuca.dev
+
+
+    steps:
+      - name: Run js unit tests
+        command: ./script/run_jasmine_tests.sh
