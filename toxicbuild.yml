@@ -17,7 +17,7 @@ builders:
 
   - name: Selenium
     plugins:
-      - apt-install:
+      - name: apt-install
           packages:
             - chromium-driver
             - xvfb
