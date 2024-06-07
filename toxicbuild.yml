@@ -4,6 +4,7 @@ builders:
     platform: python3.11
     plugins:
       - name: python-venv
+        pyversion: python3.11
         extra_indexes:
           - https://pypi.poraodojuca.dev
 
