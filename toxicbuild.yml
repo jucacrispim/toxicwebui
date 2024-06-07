@@ -20,7 +20,7 @@ builders:
         packages:
           - chromium-driver
           - xvfb
-          - killall
+          - psmisc
 
       - name: python-venv
         pyversion: python3.11
