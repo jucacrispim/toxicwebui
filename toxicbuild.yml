@@ -1,0 +1,14 @@
+builders:
+
+  - name: Python
+    platform: python3.11
+    plugins:
+      - name: python-venv
+        extra_indexes:
+          - https://pypi.poraodojuca.dev
+
+
+
+    steps:
+
+      - name: ./scripts/check_coverage.sh
