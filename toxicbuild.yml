@@ -12,3 +12,10 @@ builders:
     steps:
 
       - name: ./scripts/check_coverage.sh
+
+  - name: Selenium
+    plugins:
+      - apt-install:
+          packages:
+            - chromium-driver
+            - xvfb
