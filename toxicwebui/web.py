@@ -31,10 +31,10 @@ from pyrocumulus.web.template import render_template
 from pyrocumulus.web.urlmappers import URLSpec
 
 from toxiccommon.exceptions import (BadSettingsType, UserDoesNotExist,
-                                          BadResetPasswordToken)
+                                    BadResetPasswordToken)
 from toxiccommon.utils import is_datetime
 from toxiccore.utils import (LoggerMixin, string2datetime,
-                                   create_validation_string)
+                             create_validation_string)
 from toxicwebui import settings
 from toxicwebui.connectors import StreamConnector
 from toxiccommon.interfaces import (
@@ -50,13 +50,13 @@ from toxiccommon.interfaces import (
 )
 from toxiccommon.utils import format_datetime
 from toxicwebui.utils import (get_defaulte_locale_morsel,
-                                 get_default_timezone_morsel)
+                              get_default_timezone_morsel)
 
 BaseInterface.settings = settings
 
 COOKIE_NAME = 'toxicui'
 
-FULL_NAME_REGEX = '([\w\d\-]+/[\w\d\-]+)'
+FULL_NAME_REGEX = r'([\w\d\-]+/[\w\d\-]+)'
 
 
 def _get_dtformat(request):
@@ -959,7 +959,7 @@ class DashboardHandler(LoggedTemplateHandler):
         context = {'content': content}
         self.render_template(self.skeleton_template, context)
 
-    @get('buildset/([\d\w\-]+)')
+    @get(r'buildset/([\d\w\-]+)')
     async def show_buildset_details(self, buildset_id):
         buildset_id = buildset_id.decode()
         buildset = await BuildSetInterface.get(self.user, buildset_id)
@@ -1000,14 +1000,14 @@ class DashboardHandler(LoggedTemplateHandler):
         context = {'content': content}
         self.render_template(self.skeleton_template, context)
 
-    @get('build/([\d\w\-]+)')
+    @get(r'build/([\d\w\-]+)')
     def show_build_details(self, build_uuid):
         build_uuid = build_uuid.decode()
         content = self._get_build_template(build_uuid)
         context = {'content': content}
         self.render_template(self.skeleton_template, context)
 
-    @get('step/([\d\w\-]+)')
+    @get(r'step/([\d\w\-]+)')
     def show_step_details(self, step_uuid):
         step_uuid = step_uuid.decode()
         content = self._get_step_template(step_uuid)
@@ -1051,19 +1051,19 @@ class DashboardHandler(LoggedTemplateHandler):
         content = self._get_buildset_list_template(full_name)
         self.write(content)
 
-    @get('templates/build/([\d\w\-]+)')
+    @get(r'templates/build/([\d\w\-]+)')
     def show_build_template(self, build_uuid):
         build_uuid = build_uuid.decode()
         content = self._get_build_template(build_uuid)
         self.write(content)
 
-    @get('templates/step/([\d\w\-]+)')
+    @get(r'templates/step/([\d\w\-]+)')
     def show_step_template(self, step_uuid):
         step_uuid = step_uuid.decode()
         content = self._get_step_template(step_uuid)
         self.write(content)
 
-    @get('templates/buildset/([\d\w\-]+)')
+    @get(r'templates/buildset/([\d\w\-]+)')
     async def show_buildset_template(self, buildset_id):
         buildset_id = buildset_id.decode()
         buildset = await BuildSetInterface.get(self.user, buildset_id)

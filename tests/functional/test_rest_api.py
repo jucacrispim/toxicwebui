@@ -20,30 +20,41 @@ import json
 from unittest import TestCase
 import requests
 from pyrocumulus.auth import AccessToken
-from toxicbuild.master.repository import Repository as RepoDBModel
-from toxicbuild.master.slave import Slave as SlaveDBModel
-from toxicbuild.master.users import User as UserDBModel
-from toxicbuild.output.notifications import Notification
-from toxicbuild.ui import settings
+from toxicmaster.repository import Repository as RepoDBModel
+from toxicmaster.slave import Slave as SlaveDBModel
+from toxicmaster.users import User as UserDBModel
+from toxicnotifications.base import Notification
+from toxicwebui import settings
 from tests import async_test
-from tests.functional import (start_master, stop_master, start_webui,
-                              stop_webui, start_output, stop_output,
-                              create_output_access_token, start_secrets,
-                              stop_secrets)
+from tests.functional import (
+    start_master,
+    stop_master,
+    start_webui,
+    stop_webui,
+    start_notifications,
+    stop_notifications,
+    create_output_access_token,
+    start_secrets,
+    stop_secrets,
+    start_slave,
+    stop_slave,
+)
 
 
 def setUpModule():
+    start_slave()
     start_secrets()
     start_master()
     start_webui()
-    start_output()
+    start_notifications()
 
 
 def tearDownModule():
+    stop_slave()
     stop_master()
     stop_secrets()
     stop_webui()
-    stop_output()
+    stop_notifications()
 
 
 def _do_login():

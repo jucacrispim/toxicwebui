@@ -9,9 +9,21 @@ builders:
           - https://pypi.poraodojuca.dev
 
     steps:
+      - name: Linter checks
+        command: ./scripts/run_linter.sh
+        stop_on_fail: true
+
+      - name: Code complexity checks
+        command: xenon toxicbuild -b B
+        warning_on_fail: true
 
       - name: Unit tests & coverage
         command: ./scripts/check_coverage.sh
+
+      - name: Functional tests
+        command: pytest tests/functional
+        stop_on_fail: true
+
 
   - name: Selenium
     platform: python3.11
