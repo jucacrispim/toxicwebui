@@ -21,7 +21,7 @@ builders:
         command: ./scripts/check_coverage.sh
 
      - name: Setup env
-        command: ./scripts/env.sh
+       command: ./scripts/env.sh
 
       - name: Functional tests
         command: pytest tests/functional
