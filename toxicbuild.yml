@@ -12,7 +12,8 @@ builders:
 
     steps:
 
-      - name: ./scripts/check_coverage.sh
+      - name: Unit tests & coverage
+        command: ./scripts/check_coverage.sh
 
   - name: Selenium
     plugins:
