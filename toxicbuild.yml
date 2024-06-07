@@ -29,4 +29,4 @@ builders:
 
     steps:
       - name: Run js unit tests
-        command: ./script/run_jasmine_tests.sh
+        command: ./scripts/run_jasmine_tests.sh
