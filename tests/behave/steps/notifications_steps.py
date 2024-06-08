@@ -1,6 +1,7 @@
 # -*- coding: utf-8 -*-
 
 import time
+from selenium.webdriver.common.by import By
 from behave import when, then, given
 from tests.behave.steps.base_steps import (  # noqa f811
     given_logged_in_webui, then_sees_message)
@@ -13,7 +14,7 @@ def click_more_button_repo_info(context):
 
     def fn():
         try:
-            el = browser.find_elements_by_class_name('fa-ellipsis-h')[-1]
+            el = browser.find_elements(By.CLASS_NAME, 'fa-ellipsis-h')[-1]
             el = el if el.is_displayed() else None
         except Exception:
             el = None
@@ -30,7 +31,7 @@ def click_settings_link(context):
 
     def fn():
         try:
-            el = browser.find_elements_by_class_name('dropdown-item')[-1]
+            el = browser.find_elements(By.CLASS_NAME, 'dropdown-item')[-1]
             el = el if el.is_displayed() else None
         except Exception:
             el = None
@@ -55,7 +56,7 @@ def click_notifications_nav_item(context):
 @then('he sees the notifications page')
 def see_notificatios_page(context):
     browser = context.browser
-    el = browser.find_element_by_class_name('notification-item')
+    el = browser.find_element(By.CLASS_NAME, 'notification-item')
     assert el is not None
 
 
@@ -70,7 +71,7 @@ def click_configure_slack_notification(context):
 
     def fn():
         try:
-            el = browser.find_elements_by_class_name('fa-wrench')[1]
+            el = browser.find_elements(By.CLASS_NAME, 'fa-wrench')[1]
             el = el if el.is_displayed() else None
         except Exception:
             el = None
@@ -89,7 +90,7 @@ def fill_webhook_url(context):
 
     def fn():
         try:
-            el = browser.find_element_by_id('id-webhook_url')
+            el = browser.find_element(By.ID, 'id-webhook_url')
             el = el if el.is_displayed() else None
         except Exception:
             el = None
@@ -106,7 +107,7 @@ def click_enable_notif_btn(context):
 
     def fn():
         try:
-            el = browser.find_element_by_id('btn-enable-notification')
+            el = browser.find_element(By.ID, 'btn-enable-notification')
             el = el if el.is_displayed() else None
         except Exception:
             el = None
@@ -125,7 +126,7 @@ def has_enabled_the_slack_notification(context):
 
     def fn():
         try:
-            el = browser.find_elements_by_class_name('fa-wrench')[1]
+            el = browser.find_elements(By.CLASS_NAME, 'fa-wrench')[1]
             el = el if el.is_displayed() else None
         except Exception:
             el = None
@@ -143,7 +144,7 @@ def click_disable_notif_btn(context):
 
     def fn():
         try:
-            el = browser.find_element_by_id('btn-disable-notif')
+            el = browser.find_element(By.ID, 'btn-disable-notif')
             el = el if el.is_displayed() else None
         except Exception:
             el = None

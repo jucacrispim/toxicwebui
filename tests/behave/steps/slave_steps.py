@@ -1,6 +1,7 @@
 # -*- coding: utf-8 -*-
 
 import time
+from selenium.webdriver.common.by import By
 from behave import when, then, given
 from tests.behave.steps.base_steps import (  # noqa f811
     given_logged_in_webui)
@@ -21,7 +22,7 @@ def click_manage_slave_menu(context):
 
     def fn():
         try:
-            el = browser.find_element_by_id('manage-slaves-link')
+            el = browser.find_element(By.ID, 'manage-slaves-link')
         except Exception:
             el = None
 
@@ -43,7 +44,7 @@ def click_add_slave_button(context):
 
     def fn():
         try:
-            el = browser.find_elements_by_class_name('fa-plus')[0]
+            el = browser.find_elements(By.CLASS_NAME, 'fa-plus')[0]
         except IndexError:
             el = None
 
@@ -70,7 +71,7 @@ def fill_slave_name(context):
 
     def fn():
         try:
-            el = browser.find_elements_by_class_name('slave-details-name')[1]
+            el = browser.find_elements(By.CLASS_NAME, 'slave-details-name')[1]
         except IndexError:
             el = None
 
@@ -83,21 +84,21 @@ def fill_slave_name(context):
 @when('fills the host field')
 def fill_slave_host(context):
     browser = context.browser
-    el = browser.find_elements_by_class_name('slave-details-host')[1]
+    el = browser.find_elements(By.CLASS_NAME, 'slave-details-host')[1]
     el.send_keys('some.host')
 
 
 @when('fills the port field')
 def fill_slave_port(context):
     browser = context.browser
-    el = browser.find_elements_by_class_name('slave-details-port')[1]
+    el = browser.find_elements(By.CLASS_NAME, 'slave-details-port')[1]
     el.send_keys(1234)
 
 
 @when('fills the token field')
 def fill_token_field(context):
     browser = context.browser
-    el = browser.find_elements_by_class_name('slave-details-token')[1]
+    el = browser.find_elements(By.CLASS_NAME, 'slave-details-token')[1]
     el.send_keys('some-token')
 
 
@@ -105,7 +106,7 @@ def fill_token_field(context):
 @when('clicks in the add new slave button')
 def click_add_new_slave_button(context):
     browser = context.browser
-    el = browser.find_element_by_id('btn-save-obj')
+    el = browser.find_element(By.ID, 'btn-save-obj')
     time.sleep(0.5)
     el.click()
 
@@ -117,7 +118,7 @@ def is_in_slave_settings_page(context):
 
     def fn():
         try:
-            el = browser.find_elements_by_class_name('btn-delete-slave')[1]
+            el = browser.find_elements(By.CLASS_NAME, 'btn-delete-slave')[1]
         except IndexError:
             el = None
 
@@ -130,7 +131,7 @@ def is_in_slave_settings_page(context):
 @when('he clicks in the use ssl button')
 def click_use_ssl(context):
     browser = context.browser
-    el = browser.find_element_by_id('slave-use-ssl')
+    el = browser.find_element(By.ID, 'slave-use-ssl')
     browser.click(el)
 
 
@@ -139,7 +140,7 @@ def click_close_btn(context):
     browser = context.browser
 
     def fn():
-        el = browser.find_element_by_id('btn-cancel-save')
+        el = browser.find_element(By.ID, 'btn-cancel-save')
         return el
 
     btn = browser.wait_element_become_present(fn)
@@ -153,7 +154,7 @@ def see_slave_list(context):
 
     def fn():
         try:
-            el = browser.find_elements_by_class_name('slave-info')[1]
+            el = browser.find_elements(By.CLASS_NAME, 'slave-info')[1]
         except IndexError:
             el = None
 
@@ -172,7 +173,7 @@ def is_in_slaves_list_page(context):
 def navigate_to_slave_settings_page(context):
     browser = context.browser
 
-    el = browser.find_elements_by_class_name('fa-ellipsis-h')[1]
+    el = browser.find_elements(By.CLASS_NAME, 'fa-ellipsis-h')[1]
     el.click()
     browser.click_link('Settings')
     browser.wait_text_become_present('General configurations')
@@ -184,7 +185,7 @@ def click_delete_button(context):
 
     def fn():
         try:
-            el = browser.find_elements_by_class_name('btn-delete-slave')[1]
+            el = browser.find_elements(By.CLASS_NAME, 'btn-delete-slave')[1]
         except IndexError:
             el = None
 
@@ -200,6 +201,6 @@ def click_delete_button(context):
 def click_delete_button_modal(context):
     browser = context.browser
 
-    el = browser.find_element_by_id('btn-remove-obj')
+    el = browser.find_element(By.ID, 'btn-remove-obj')
     browser.wait_element_become_visible(el)
     el.click()

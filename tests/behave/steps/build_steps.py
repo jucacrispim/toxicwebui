@@ -1,6 +1,7 @@
 # -*- coding: utf-8 -*-
 
 import time
+from selenium.webdriver.common.by import By
 from behave import given, when, then
 from selenium.common.exceptions import StaleElementReferenceException
 
@@ -28,7 +29,7 @@ def click_reschedule(context):
 
     def fn():
         try:
-            el = browser.find_elements_by_class_name('fa-redo')[2]
+            el = browser.find_elements(By.CLASS_NAME, 'fa-redo')[2]
             el = el if el.is_displayed() else None
         except IndexError:
             el = None
@@ -48,7 +49,7 @@ def buildset_already_rescheduled(context):
         classes = ['build-preparing', 'build-pending']
         for cls in classes:
             try:
-                el = browser.find_elements_by_class_name(cls)[0]
+                el = browser.find_elements(By.CLASS_NAME, cls)[0]
             except IndexError:
                 el = None
 
@@ -67,7 +68,7 @@ def click_buildetails_button(context):
 
     def fn():
         try:
-            el = browser.find_elements_by_class_name('build-details-link')[1]
+            el = browser.find_elements(By.CLASS_NAME, 'build-details-link')[1]
         except IndexError:
             el = None
 
@@ -83,8 +84,8 @@ def see_build_details(context):
 
     def fn():
         try:
-            el = browser.find_elements_by_class_name(
-                'build-details-container')[0]
+            el = browser.find_elements(By.CLASS_NAME,
+                                       'build-details-container')[0]
         except IndexError:
             el = None
 
@@ -104,7 +105,7 @@ def wait_build_finish(context):
     browser = context.browser
 
     def fn():
-        el = browser.find_elements_by_class_name('build-total-time')[0]
+        el = browser.find_elements(By.CLASS_NAME, 'build-total-time')[0]
         try:
             if el.text:
                 r = el

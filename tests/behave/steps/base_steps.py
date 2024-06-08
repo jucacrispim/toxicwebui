@@ -1,6 +1,7 @@
 # -*- coding: utf-8 -*-
 
 import time
+from selenium.webdriver.common.by import By
 from toxicwebui import settings
 from behave import given, then, when
 from tests.behave import take_screenshot
@@ -17,7 +18,7 @@ def logged_in_webui(context):
     if not browser.is_logged:
         browser.do_login(url, 'someguy', '123')
 
-    el = browser.find_element_by_class_name('logout-link-container')
+    el = browser.find_element(By.CLASS_NAME, 'logout-link-container')
     browser.wait_element_become_visible(el)
 
 
@@ -40,7 +41,7 @@ then_sees_message = then('he sees the "{msg}" message')(sees_message)
 @take_screenshot
 def navigate2settings(context):
     browser = context.browser
-    btn = browser.find_element_by_xpath('a[href="/settings/repositories"]')
+    btn = browser.find_element(By.XPATH, 'a[href="/settings/repositories"]')
     browser.click(btn)
     browser.wait_text_become_present('Manage repositories')
 
@@ -64,5 +65,5 @@ def user_sees_main_main_page_login(context):
 def click_add_button(context):
     browser = context.browser
     time.sleep(0.5)
-    btn = browser.find_element_by_id('btn-save-obj')
+    btn = browser.find_element(By.ID, 'btn-save-obj')
     browser.click(btn)

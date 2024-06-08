@@ -5,8 +5,8 @@ toxiccommon>=0.10.0
 pytest==7.3.2
 pytest-cov==4.1.0
 pytest-cover==3.0.0
-selenium==4.0.0
-toxicjasmine==0.2.3
+selenium==4.21.0
+toxicjasmine==0.2.4
 behave==1.2.6
 toxicmaster>=0.11.0
 toxicpoller>=0.10.0
@@ -19,4 +19,4 @@ pylint-mongoengine==0.6.0
 pylint-plugin-utils==0.8.2
 xenon==0.9.0
 flake8==6.0.0
-undetected-chromedriver==3.4.6
+undetected-chromedriver==3.5.5

@@ -1,6 +1,7 @@
 # -*- coding: utf-8 -*-
 
 import time
+from selenium.webdriver.common.by import By
 from behave import when, then, given
 from tests.behave.steps.base_steps import (  # noqa f811
     given_logged_in_webui, then_sees_message, when_navigate2settings,
@@ -11,7 +12,7 @@ from tests.functional import REPO_DIR
 @when('he clicks in the add repository link')
 def click_add_repo_btn(context):
     browser = context.browser
-    btn = browser.find_element_by_xpath('//a[@href="/repository/add"]')
+    btn = browser.find_element(By.XPATH, '//a[@href="/repository/add"]')
     browser.wait_element_become_visible(btn)
     browser.click(btn)
 
@@ -33,36 +34,36 @@ def is_in_the_add_repo_page(context):
 @when('he fills the name with a repo name')
 def fill_repo_name(context):
     browser = context.browser
-    name_input = browser.find_elements_by_class_name('repo-details-name')[1]
+    name_input = browser.find_elements(By.CLASS_NAME, 'repo-details-name')[1]
     name_input.send_keys('MyNewRepo')
 
 
 @when('fills the url field with a repo url')
 def fill_repo_url(context):
     browser = context.browser
-    url_input = browser.find_elements_by_class_name('repo-details-url')[1]
+    url_input = browser.find_elements(By.CLASS_NAME, 'repo-details-url')[1]
     url_input.send_keys(REPO_DIR)
 
 
 @when('he fills the parallel builds with 2')
 def fill_parallel_builds(context):
     browser = context.browser
-    el_input = browser.find_elements_by_class_name(
-        'repo-parallel-builds')[1]
+    el_input = browser.find_elements(By.CLASS_NAME,
+                                     'repo-parallel-builds')[1]
     el_input.send_keys(2)
 
 
 @when('he clicks in the environment variables button')
 def click_envvars_button(context):
     browser = context.browser
-    btn = browser.find_elements_by_class_name('envvars-badge')[1]
+    btn = browser.find_elements(By.CLASS_NAME, 'envvars-badge')[1]
     btn.click()
 
 
 @when('he clicks in the secrets button')
 def click_secrets_button(context):
     browser = context.browser
-    btn = browser.find_elements_by_class_name('secrets-badge')[1]
+    btn = browser.find_elements(By.CLASS_NAME, 'secrets-badge')[1]
     btn.click()
 
 
@@ -70,10 +71,10 @@ def click_secrets_button(context):
 def fill_envvar(context):
     browser = context.browser
     key = browser.wait_element_become_present(
-        lambda: browser.find_elements_by_class_name('envvars-key')[0])
+        lambda: browser.find_elements(By.CLASS_NAME, 'envvars-key')[0])
 
     val = browser.wait_element_become_present(
-        lambda: browser.find_elements_by_class_name('envvars-value')[0])
+        lambda: browser.find_elements(By.CLASS_NAME, 'envvars-value')[0])
     key.send_keys('the-key')
     val.send_keys('the-value')
 
@@ -82,10 +83,10 @@ def fill_envvar(context):
 def fill_secret(context):
     browser = context.browser
     key = browser.wait_element_become_present(
-        lambda: browser.find_elements_by_class_name('secrets-key')[0])
+        lambda: browser.find_elements(By.CLASS_NAME, 'secrets-key')[0])
 
     val = browser.wait_element_become_present(
-        lambda: browser.find_elements_by_class_name('secrets-value')[0])
+        lambda: browser.find_elements(By.CLASS_NAME, 'secrets-value')[0])
     key.send_keys('the-key')
     val.send_keys('the-value')
 
@@ -93,14 +94,14 @@ def fill_secret(context):
 @when('clicks in the save environment variables button')
 def click_save_envvars(context):
     browser = context.browser
-    btn = browser.find_element_by_id('btn-update-envvars')
+    btn = browser.find_element(By.ID, 'btn-update-envvars')
     btn.click()
 
 
 @when('clicks in the save secrets button')
 def click_save_secrets(context):
     browser = context.browser
-    btn = browser.find_element_by_id('btn-update-secrets')
+    btn = browser.find_element(By.ID, 'btn-update-secrets')
     btn.click()
 
 
@@ -108,7 +109,7 @@ def click_save_secrets(context):
 def is_in_repo_settings_page(context):
     browser = context.browser
     el = browser.wait_element_become_present(
-        lambda: browser.find_element_by_class_name('fa-list'))
+        lambda: browser.find_element(By.CLASS_NAME, 'fa-list'))
     assert el
 
 
@@ -116,8 +117,8 @@ def is_in_repo_settings_page(context):
 def click_advanced_config(context):
     browser = context.browser
     el = browser.wait_element_become_present(
-        lambda: browser.find_elements_by_class_name(
-            'repo-config-advanced-span')[1])
+        lambda: browser.find_elements(By.CLASS_NAME,
+                                      'repo-config-advanced-span')[1])
     browser.click(el)
 
 
@@ -125,30 +126,30 @@ def click_advanced_config(context):
 @then('he sees the advanced options')
 def see_advanced_options(context):
     browser = context.browser
-    el = browser.find_elements_by_class_name('repo-branches-ul')[1]
+    el = browser.find_elements(By.CLASS_NAME, 'repo-branches-ul')[1]
     browser.wait_element_become_visible(el)
 
 
 @then('sees the advanced help in the side bar')
 def see_advanced_help(context):
     browser = context.browser
-    sidebar_help = browser.find_element_by_id('parallel-builds-config-p')
+    sidebar_help = browser.find_element(By.ID, 'parallel-builds-config-p')
     browser.wait_element_become_visible(sidebar_help)
 
 
 @when('he clicks in the add branch button')
 def clicks_branch_button(context):
     browser = context.browser
-    btn = browser.find_elements_by_class_name('add-branch-btn')[1]
+    btn = browser.find_elements(By.CLASS_NAME, 'add-branch-btn')[1]
     browser.click(btn)
-    el = browser.find_element_by_id('addBranchModal')
+    el = browser.find_element(By.ID, 'addBranchModal')
     browser.wait_element_become_visible(el)
 
 
 @when('fills the branch name')
 def fill_branch_name(context):
     browser = context.browser
-    el = browser.find_element_by_id('repo-branch-name')
+    el = browser.find_element(By.ID, 'repo-branch-name')
     el.send_keys('master')
     time.sleep(0.5)
 
@@ -156,7 +157,7 @@ def fill_branch_name(context):
 @when('clicks in the add branch button')
 def click_add_branch_button(context):
     browser = context.browser
-    el = browser.find_element_by_id('btn-add-branch')
+    el = browser.find_element(By.ID, 'btn-add-branch')
     browser.click(el)
     time.sleep(0.5)
 
@@ -166,7 +167,7 @@ def see_new_branch(context):
     browser = context.browser
 
     el = browser.wait_element_become_present(
-        lambda: browser.find_elements_by_class_name('repo-branches-li')[2])
+        lambda: browser.find_elements(By.CLASS_NAME, 'repo-branches-li')[2])
     assert el
 
 
@@ -178,14 +179,14 @@ def already_added_branch(context):
 @when('he clicks in the remove branch config button')
 def click_remove_branch_btn(context):
     browser = context.browser
-    btn = browser.find_elements_by_class_name('remove-branch-btn')[2]
+    btn = browser.find_elements(By.CLASS_NAME, 'remove-branch-btn')[2]
     browser.click(btn)
 
 
 @then('he sees the no branch config info in the list')
 def see_no_branch_config_info(context):
     browser = context.browser
-    el = browser.find_elements_by_class_name('no-item-placeholder')[1]
+    el = browser.find_elements(By.CLASS_NAME, 'no-item-placeholder')[1]
     browser.wait_element_become_visible(el)
 
 
@@ -195,7 +196,7 @@ def click_slave_enabled_check(context):
     xpath = '//li[@class="repo-slaves-li box-shadow-light box-white"]'
     xpath += '/div/div/label[@class="btn btn-success toggle-on"]'
 
-    el = browser.find_element_by_xpath(xpath)
+    el = browser.find_element(By.XPATH, xpath)
     browser.wait_element_become_visible(el)
     browser.click(el)
 
@@ -206,7 +207,7 @@ def see_slave_disabled_check(context):
     xpath = '//li[@class="repo-slaves-li box-shadow-light box-white"]'
     xpath += '/div/div/label[@class="btn btn-secondary active toggle-off"]'
 
-    el = browser.find_element_by_xpath(xpath)
+    el = browser.find_element(By.XPATH, xpath)
     browser.wait_element_become_visible(el)
 
 
@@ -216,7 +217,7 @@ def clicks_slave_disabled_btn(context):
     xpath = '//li[@class="repo-slaves-li box-shadow-light box-white"]'
     xpath += '/div/div/label[@class="btn btn-secondary active toggle-off"]'
 
-    el = browser.find_element_by_xpath(xpath)
+    el = browser.find_element(By.XPATH, xpath)
     browser.wait_element_become_visible(el)
     browser.click(el)
 
@@ -227,7 +228,7 @@ def see_slave_enabled_check(context):
     xpath = '//li[@class="repo-slaves-li box-shadow-light box-white"]'
     xpath += '/div/div/label[@class="btn btn-success toggle-on"]'
 
-    el = browser.find_element_by_xpath(xpath)
+    el = browser.find_element(By.XPATH, xpath)
     browser.wait_element_become_visible(el)
 
 
@@ -238,7 +239,7 @@ def click_repo_enabled_check(context):
         'repository-info-enabled-container repo-enabled')
     xpath += '/div/div/label[@class="btn btn-success toggle-on"]'
 
-    el = browser.find_element_by_xpath(xpath)
+    el = browser.find_element(By.XPATH, xpath)
     browser.wait_element_become_visible(el)
     browser.click(el)
 
@@ -250,16 +251,16 @@ def see_repo_disabled_check(context):
         'repository-info-enabled-container repo-enabled')
     xpath += '/div/div/label[@class="btn btn-secondary active toggle-off"]'
 
-    el = browser.find_element_by_xpath(xpath)
+    el = browser.find_element(By.XPATH, xpath)
     browser.wait_element_become_visible(el)
 
 
 @when('he clicks in the close button')
 def click_close_btn(context):
     browser = context.browser
-    btn = browser.find_element_by_class_name('close-btn')
+    btn = browser.find_element(By.CLASS_NAME, 'close-btn')
     browser.click(btn)
-    el = browser.find_element_by_id('no-repos-message')
+    el = browser.find_element(By.ID, 'no-repos-message')
     browser.wait_element_become_visible(el)
 
 
@@ -268,14 +269,14 @@ def click_manage_repos_link(context):
     browser = context.browser
     browser.click_link('manage')
     browser.wait_text_become_present('Manage repositories')
-    el = browser.find_element_by_class_name('fa-plus')
+    el = browser.find_element(By.CLASS_NAME, 'fa-plus')
     browser.wait_element_become_visible(el)
 
 
 @then('he sees a list of repositories')
 def see_repo_list(context):
     browser = context.browser
-    el = browser.find_elements_by_class_name('repository-info')[1]
+    el = browser.find_elements(By.CLASS_NAME, 'repository-info')[1]
     browser.wait_element_become_visible(el)
 
 
@@ -292,7 +293,7 @@ def click_repo_disabled_button(context):
         'repository-info-enabled-container repo-disabled')
     xpath += '/div/div/label[@class="btn btn-secondary active toggle-off"]'
 
-    el = browser.find_element_by_xpath(xpath)
+    el = browser.find_element(By.XPATH, xpath)
     browser.wait_element_become_visible(el)
     browser.click(el)
 
@@ -305,7 +306,7 @@ def see_repo_enabled_check(context):
         'repository-info-enabled-container')
     xpath += '/div/div/label[@class="btn btn-success toggle-on"]'
 
-    el = browser.find_element_by_xpath(xpath)
+    el = browser.find_element(By.XPATH, xpath)
     browser.wait_element_become_visible(el)
 
 
@@ -313,10 +314,10 @@ def see_repo_enabled_check(context):
 def clicks_toxicbuild_logo(context):
     browser = context.browser
 
-    el = browser.find_elements_by_class_name('navbar-brand')[0]
+    el = browser.find_elements(By.CLASS_NAME, 'navbar-brand')[0]
     browser.click(el)
     browser.wait_text_become_present('Your Repositories')
-    el = browser.find_elements_by_class_name('fa-wrench')[0]
+    el = browser.find_elements(By.CLASS_NAME, 'fa-wrench')[0]
     browser.wait_element_become_visible(el)
 
 
@@ -325,11 +326,11 @@ def click_repo_menu(context):
     browser = context.browser
 
     el = browser.wait_element_become_present(
-        lambda: browser.find_elements_by_class_name('fa-ellipsis-h')[1])
+        lambda: browser.find_elements(By.CLASS_NAME, 'fa-ellipsis-h')[1])
     browser.click(el)
 
     el = browser.wait_element_become_present(
-        lambda: browser.find_elements_by_class_name('dropdown-menu-right')[1])
+        lambda: browser.find_elements(By.CLASS_NAME, 'dropdown-menu-right')[1])
     assert el
 
 
@@ -346,7 +347,7 @@ def see_repo_settings_page(context):
 
     def fn():
         try:
-            el = browser.find_element_by_class_name('fa-list')
+            el = browser.find_element(By.CLASS_NAME, 'fa-list')
             el = el if el.is_displayed() else None
         except IndexError:
             el = None
@@ -360,16 +361,16 @@ def see_repo_settings_page(context):
 @when('clicks in the delete repo button')
 def click_delete_button(context):
     browser = context.browser
-    el = browser.find_elements_by_class_name('btn-delete-repo')[1]
+    el = browser.find_elements(By.CLASS_NAME, 'btn-delete-repo')[1]
     browser.wait_element_become_visible(el)
     el.click()
 
-    el = browser.find_element_by_id('removeRepoModal')
+    el = browser.find_element(By.ID, 'removeRepoModal')
     browser.wait_element_become_visible(el)
 
 
 @when('clicks in the delete repo button in the modal')
 def click_delete_button_modal(context):
     browser = context.browser
-    el = browser.find_element_by_id('btn-remove-obj')
+    el = browser.find_element(By.ID, 'btn-remove-obj')
     el.click()

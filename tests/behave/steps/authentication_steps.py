@@ -1,6 +1,7 @@
 # -*- coding: utf-8 -*-
 
 import time
+from selenium.webdriver.common.by import By
 from behave import when, then, given
 from toxicwebui import settings
 from tests.behave.steps.base_steps import (  # noqa f811
@@ -26,7 +27,7 @@ def sees_login_page(context):
 
     def fn():
         try:
-            el = browser.find_element_by_id('inputUsername')
+            el = browser.find_element(By.ID, 'inputUsername')
         except Exception:
             el = None
 
@@ -52,35 +53,35 @@ def user_is_in_login_page(context):
 @when('he inserts "{user_name}" as user name')
 def user_inserts_username_login(context, user_name):
     browser = context.browser
-    username_input = browser.find_element_by_id('inputUsername')
+    username_input = browser.find_element(By.ID, 'inputUsername')
     username_input.send_keys(user_name)
 
 
 @when('inserts "{passwd}" as password')
 def user_inserts_password_login(context, passwd):
     browser = context.browser
-    passwd_input = browser.find_element_by_id('inputPassword')
+    passwd_input = browser.find_element(By.ID, 'inputPassword')
     passwd_input.send_keys(passwd)
 
 
 @when('clicks in the login button')
 def user_clicks_login_button(context):
     browser = context.browser
-    btn = browser.find_element_by_id('btn-login')
+    btn = browser.find_element(By.ID, 'btn-login')
     btn.click()
 
 
 @then('he sees the red warning in the password field')
 def user_sees_missing_required_field_warning(context):
     browser = context.browser
-    el = browser.find_element_by_class_name('form-control-error')
+    el = browser.find_element(By.CLASS_NAME, 'form-control-error')
     assert el
 
 
 @then('he sees the invalid credentials message')
 def user_sees_invalid_credentials_message(context):
     browser = context.browser
-    el = browser.find_element_by_id('login-error-msg-container')
+    el = browser.find_element(By.ID, 'login-error-msg-container')
     color = el.value_of_css_property('color')
     time.sleep(0.5)
     assert color != 'rgb(255, 255, 255)'
@@ -91,7 +92,7 @@ def user_sees_invalid_credentials_message(context):
 @when('he clicks in the logout link')  # noqa f401
 def step_impl(context):
     browser = context.browser
-    el = browser.find_element_by_class_name('nav-link')
+    el = browser.find_element(By.CLASS_NAME, 'nav-link')
     browser.click(el)
-    el = browser.find_elements_by_class_name('dropdown-item-logout')[-1]
+    el = browser.find_elements(By.CLASS_NAME, 'dropdown-item-logout')[-1]
     browser.click(el)

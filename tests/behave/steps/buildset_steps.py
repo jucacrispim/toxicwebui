@@ -1,5 +1,6 @@
 # -*- coding: utf-8 -*-
 
+from selenium.webdriver.common.by import By
 from behave import when, then, given
 from selenium.common.exceptions import StaleElementReferenceException
 from tests.behave import take_screenshot
@@ -14,7 +15,7 @@ def click_summary_link(context):
 
     def fn():
         try:
-            el = browser.find_elements_by_xpath('//a[@title="Summary"]')[1]
+            el = browser.find_elements(By.XPATH, '//a[@title="Summary"]')[1]
             el = el if el.is_displayed() else None
         except Exception:
             el = None
@@ -33,7 +34,7 @@ def see_buildset_list_page(context):
 
     def fn():
         try:
-            el = browser.find_elements_by_class_name('buildset-info')[1]
+            el = browser.find_elements(By.CLASS_NAME, 'buildset-info')[1]
             el = el if el.is_displayed() else None
         except Exception:
             el = None
@@ -59,7 +60,7 @@ def click_reschedule_button(context):
 
     def fn():
         try:
-            el = browser.find_elements_by_class_name('fa-redo')[1]
+            el = browser.find_elements(By.CLASS_NAME, 'fa-redo')[1]
             el = el if el.is_displayed() else None
         except Exception:
             el = None
@@ -83,7 +84,7 @@ def see_buildset_running(context):
     browser = context.browser
 
     browser.wait_element_become_present(
-        lambda: browser.find_elements_by_class_name('badge-primary')[0])
+        lambda: browser.find_elements(By.CLASS_NAME, 'badge-primary')[0])
 
 
 @given('the user already rescheduled a buildset')
@@ -91,7 +92,7 @@ def see_buildset_running(context):
 def already_rescheduled_buildset(context):
     browser = context.browser
     browser.refresh()
-    el = browser.find_elements_by_class_name('badge-primary')[0]
+    el = browser.find_elements(By.CLASS_NAME, 'badge-primary')[0]
     browser.wait_element_become_visible(el)
 
 
@@ -99,11 +100,11 @@ def already_rescheduled_buildset(context):
 @take_screenshot
 def click_in_buildset_details_link(context):
     browser = context.browser
-    el = browser.find_elements_by_class_name('buildset-details-link')[3]
+    el = browser.find_elements(By.CLASS_NAME, 'buildset-details-link')[3]
     try:
         browser.wait_element_become_visible(el)
     except StaleElementReferenceException:
-        el = browser.find_elements_by_class_name('buildset-details-link')[3]
+        el = browser.find_elements(By.CLASS_NAME, 'buildset-details-link')[3]
         browser.wait_element_become_visible(el)
 
     el.click()
@@ -116,8 +117,8 @@ def see_buildset_details(context):
 
     def fn():
         try:
-            el = browser.find_elements_by_class_name(
-                'buildset-details-header')[1]
+            el = browser.find_elements(By.CLASS_NAME,
+                                       'buildset-details-header')[1]
         except IndexError:
             el = None
 
@@ -139,7 +140,7 @@ def builds_start(context):
 
     def fn():
         try:
-            el = browser.find_elements_by_class_name('badge-primary')[0]
+            el = browser.find_elements(By.CLASS_NAME, 'badge-primary')[0]
         except IndexError:
             el = None
 
@@ -156,7 +157,7 @@ def wait_builds_to_complete(context):
 
     def fn():
         try:
-            el = browser.find_elements_by_class_name('badge-primary')[0]
+            el = browser.find_elements(By.CLASS_NAME, 'badge-primary')[0]
         except IndexError:
             el = None
 

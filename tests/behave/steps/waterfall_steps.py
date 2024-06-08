@@ -1,6 +1,7 @@
 # -*- coding: utf-8 -*-
 
 import time
+from selenium.webdriver.common.by import By
 from behave import when, then, given
 from tests.behave import take_screenshot
 from tests.behave.steps.base_steps import (  # noqa f811
@@ -14,7 +15,7 @@ def clicks_waterfall_button(context):
 
     def fn():
         try:
-            btn = browser.find_elements_by_class_name('badge')[1]
+            btn = browser.find_elements(By.CLASS_NAME, 'badge')[1]
             btn = btn if btn.is_displayed() else None
         except Exception:
             btn = None
@@ -30,13 +31,13 @@ def clicks_waterfall_button(context):
 @take_screenshot
 def sees_waterfall_builds_list(context):
     browser = context.browser
-    elements = browser.find_elements_by_class_name(
-        'waterfall-buildset-info-container')
+    elements = browser.find_elements(By.CLASS_NAME,
+                                     'waterfall-buildset-info-container')
     timeout = 5
     c = 0
     while not bool(elements) and c < timeout:
         time.sleep(1)
-        elements = browser.find_elements_by_class_name('step-running')
+        elements = browser.find_elements(By.CLASS_NAME, 'step-running')
         c += 1
 
     assert bool(elements)
@@ -54,7 +55,7 @@ def clicks_reschedule_buildset_button(context):
 
     def fn():
         try:
-            btn = browser.find_elements_by_class_name('fa-redo')[2]
+            btn = browser.find_elements(By.CLASS_NAME, 'fa-redo')[2]
             btn = btn if btn.is_displayed() else None
         except IndexError:
             btn = None
@@ -74,7 +75,7 @@ def reschedule_buildset(context):
         classes = ['build-preparing', 'build-pending']
         for cls in classes:
             try:
-                el = browser.find_elements_by_class_name(cls)[0]
+                el = browser.find_elements(By.CLASS_NAME, cls)[0]
             except IndexError:
                 el = None
 
@@ -94,7 +95,7 @@ def builds_start_running(context):
 
     def fn():
         try:
-            el = browser.find_elements_by_class_name('build-running')[0]
+            el = browser.find_elements(By.CLASS_NAME, 'build-running')[0]
         except IndexError:
             el = None
 
@@ -111,7 +112,7 @@ def wait_builds_complete(context):
 
     def fn():
         try:
-            el = browser.find_elements_by_class_name('build-running')[0]
+            el = browser.find_elements(By.CLASS_NAME, 'build-running')[0]
         except IndexError:
             el = None
 
@@ -126,7 +127,7 @@ def click_branch_select(context):
     browser = context.browser
 
     el = browser.wait_element_become_present(
-        lambda: browser.find_elements_by_class_name('navbar-select')[1])
+        lambda: browser.find_elements(By.CLASS_NAME, 'navbar-select')[1])
     el.click()
 
 
@@ -135,7 +136,7 @@ def click_master_branch(context):
     browser = context.browser
 
     def fn():
-        return browser.find_elements_by_class_name('option')[1]
+        return browser.find_elements(By.CLASS_NAME, 'option')[1]
 
     el = browser.wait_element_become_present(fn, check_display=False)
     assert el

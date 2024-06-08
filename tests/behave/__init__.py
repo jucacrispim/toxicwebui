@@ -4,6 +4,7 @@
 import os
 import time
 from selenium import webdriver
+from selenium.webdriver.common.by import By
 from selenium.common.exceptions import (
     NoSuchElementException,
     StaleElementReferenceException
@@ -27,7 +28,7 @@ class SeleniumBrowser(uc.Chrome):
             "excludeSwitches", ["enable-automation"])
         options.add_experimental_option('useAutomationExtension', False)
         options.add_argument('--disable-blink-features=AutomationControlled')
-        kwargs['version_main'] = os.environ.get('CHROME_VERSION')
+        kwargs['version_main'] = int(os.environ.get('CHROME_VERSION', 102))
         super().__init__(*args, chrome_options=options, **kwargs)
         # self.maximize_window()
         self.implicitly_wait(10)
@@ -92,18 +93,18 @@ class SeleniumBrowser(uc.Chrome):
         :param passwd: Password for login."""
 
         self.get(url)
-        username_input = self.find_element_by_id('inputUsername')
+        username_input = self.find_element(By.ID, 'inputUsername')
         username_input.send_keys(username)
 
-        passwd_input = self.find_element_by_id('inputPassword')
+        passwd_input = self.find_element(By.ID, 'inputPassword')
         passwd_input.send_keys(passwd)
-        btn = self.find_element_by_id('btn-login')
+        btn = self.find_element(By.ID, 'btn-login')
         self.click(btn)
 
     def click_link(self, link_text):
         """Clicks in  link indicated by link_text"""
 
-        self.click(self.find_element_by_partial_link_text(link_text))
+        self.click(self.find_element(By.PARTIAL_LINK_TEXT, link_text))
 
     @property
     def is_logged(self):
@@ -111,7 +112,7 @@ class SeleniumBrowser(uc.Chrome):
 
         try:
             self.implicitly_wait(0)
-            self.find_element_by_id('inputPassword')
+            self.find_element(By.ID, 'inputPassword')
             is_logged = False
         except NoSuchElementException:
             is_logged = True
