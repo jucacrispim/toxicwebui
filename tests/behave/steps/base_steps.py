@@ -21,7 +21,7 @@ def logged_in_webui(context):
     def fn():
         try:
             el = browser.find_element(By.CLASS_NAME, 'logout-link-container')
-            el = el if el.is_displayed() else None
+            el = el if el and el.is_displayed() else None
         except IndexError:
             el = None
 
