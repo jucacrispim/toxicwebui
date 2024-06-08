@@ -1,8 +1,7 @@
 builders:
 
   - name: Python
-    docker: true
-    platform: python3.11
+    platform: docker-python3.11
     plugins:
       - name: python-venv
         pyversion: python3.11
