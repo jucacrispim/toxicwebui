@@ -18,7 +18,17 @@ def logged_in_webui(context):
     if not browser.is_logged:
         browser.do_login(url, 'someguy', '123')
 
-    el = browser.find_element(By.CLASS_NAME, 'logout-link-container')
+    def fn():
+        try:
+            el = browser.find_element(By.CLASS_NAME, 'logout-link-container')
+            el = el if el.is_displayed() else None
+        except IndexError:
+            el = None
+
+        return el
+
+    el = browser.wait_element_become_present(fn)
+
     browser.wait_element_become_visible(el)
 
 
