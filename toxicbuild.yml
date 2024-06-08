@@ -46,3 +46,6 @@ builders:
     steps:
       - name: Run js unit tests
         command: ./scripts/run_jasmine_tests.sh
+
+      - name: Run selenium tests
+        command: ./scripts/run_selenium_tests.sh

@@ -2,8 +2,8 @@
 
 import time
 from behave import given, when, then
-from toxicbuild.ui import settings
-from tests.webui.steps.base_steps import (  # noqa f811
+from toxicwebui import settings
+from tests.behave.steps.base_steps import (  # noqa f811
     user_sees_main_main_page_login)
 
 

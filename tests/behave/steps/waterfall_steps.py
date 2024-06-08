@@ -2,8 +2,8 @@
 
 import time
 from behave import when, then, given
-from tests.webui import take_screenshot
-from tests.webui.steps.base_steps import (  # noqa f811
+from tests.behave import take_screenshot
+from tests.behave.steps.base_steps import (  # noqa f811
     given_logged_in_webui, then_sees_message)
 
 

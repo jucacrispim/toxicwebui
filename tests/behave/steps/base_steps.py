@@ -1,9 +1,9 @@
 # -*- coding: utf-8 -*-
 
 import time
-from toxicbuild.ui import settings
+from toxicwebui import settings
 from behave import given, then, when
-from tests.webui import take_screenshot
+from tests.behave import take_screenshot
 
 
 @take_screenshot

@@ -2,15 +2,17 @@
 
 import asyncio
 import os
-from toxicbuild.core.utils import log
-from toxicbuild.master import create_settings_and_connect
-from toxicbuild.slave import create_settings
-from toxicbuild.ui import create_settings as create_settings_ui
-from toxicbuild.output import (
+from toxiccore.utils import log
+from toxicmaster import create_settings_and_connect
+from toxicslave import create_settings
+from toxicwebui import create_settings as create_settings_ui
+from toxicnotifications import (
     create_settings_and_connect as create_settings_output)
 from tests.functional import (REPO_DIR,
-                              SLAVE_ROOT_DIR, MASTER_ROOT_DIR, UI_ROOT_DIR,
-                              OUTPUT_ROOT_DIR, create_output_access_token)
+                              SLAVE_ROOT_DIR, MASTER_ROOT_DIR,
+                              TEST_DATA_DIR,
+                              NOTIFICATIONS_ROOT_DIR,
+                              create_output_access_token)
 
 # settings needed to the test data. This needs to be before the
 # import from ui.models
@@ -25,14 +27,14 @@ if not toxicslave_conf:
     toxicslave_conf = os.path.join(SLAVE_ROOT_DIR, 'toxicslave.conf')
     os.environ['TOXICSLAVE_SETTINGS'] = toxicslave_conf
 
-toxicweb_conf = os.environ.get('TOXICUI_SETTINGS')
+toxicweb_conf = os.environ.get('TOXICWEBUI_SETTINGS')
 if not toxicweb_conf:
-    toxicweb_conf = os.path.join(UI_ROOT_DIR, 'toxicui.conf')
-    os.environ['TOXICUI_SETTINGS'] = toxicweb_conf
+    toxicweb_conf = os.path.join(TEST_DATA_DIR, 'toxicwebui.conf')
+    os.environ['TOXICWEBUI_SETTINGS'] = toxicweb_conf
 
 toxicoutput_conf = os.environ.get('TOXICOUTPUT_SETTINGS')
 if not toxicoutput_conf:
-    toxicoutput_conf = os.path.join(OUTPUT_ROOT_DIR, 'toxicoutput.conf')
+    toxicoutput_conf = os.path.join(NOTIFICATIONS_ROOT_DIR, 'toxicoutput.conf')
     os.environ['TOXICOUTPUT_SETTINGS'] = toxicoutput_conf
 
 create_settings()
@@ -41,18 +43,19 @@ create_settings_and_connect()
 create_settings_output()
 
 from pyrocumulus.auth import AccessToken  # noqa f402
-from toxicbuild.common.exchanges import scheduler_action, conn  # noqa f402
-from toxicbuild.ui import settings  # noqa f402
-from toxicbuild.master.users import User  # noqa f402
-from toxicbuild.common.interfaces import (  # noqa 402
+from toxiccommon.exchanges import scheduler_action, conn  # noqa f402
+from toxicwebui import settings  # noqa f402
+from toxicmaster.users import User  # noqa f402
+from toxiccommon.interfaces import (  # noqa 402
     SlaveInterface, RepositoryInterface, BaseInterface)
 from tests.functional import (start_slave, stop_slave,  # noqa 402
                               start_master, stop_master,
-                              start_new_poller, stop_new_poller,
-                              start_output, stop_output,
+                              start_poller, stop_poller,
+                              start_notifications, stop_notifications,
                               start_webui, stop_webui,
+                              start_secrets, stop_secrets,
                               REPO_DIR)
-from tests.webui import SeleniumBrowser  # noqa 402
+from tests.behave import SeleniumBrowser  # noqa 402
 
 
 BaseInterface.settings = settings
@@ -79,7 +82,7 @@ def quit_browser(context):
 async def create_slave(context):
     """Creates a slave to be used in repo tests"""
 
-    from toxicbuild.ui import settings
+    from toxicwebui import settings
 
     await SlaveInterface.add(
         context.user, name='repo-slave', host=settings.TEST_SLAVE_HOST,
@@ -108,7 +111,7 @@ async def del_auth_token(context):
 async def create_repo(context):
     """Creates a new repo to be used in tests"""
 
-    from toxicbuild.master import settings as master_settings
+    from toxicmaster import settings as master_settings
     await conn.connect(**master_settings.RABBITMQ_CONNECTION)
     await scheduler_action.declare()
 
@@ -147,7 +150,7 @@ async def del_repo(context):
         except Exception as e:
             log('Error deleting repo ' + str(e), level='warning')
 
-    from toxicbuild.master.repository import Repository as RepoModel
+    from toxicmaster.repository import Repository as RepoModel
 
     await RepoModel.drop_collection()
 
@@ -161,8 +164,9 @@ async def create_root_user(context):
 def before_all(context):
     if not os.environ.get('TEST_DOCKER_IMAGES'):
         start_slave()
-        start_new_poller()
-        start_output()
+        start_poller()
+        start_notifications()
+        start_secrets()
         start_master()
         start_webui()
 
@@ -237,8 +241,9 @@ def after_all(context):
 
     if not os.environ.get('TEST_DOCKER_IMAGES'):
         stop_webui()
-        stop_output()
-        stop_new_poller()
+        stop_notifications()
+        stop_secrets()
+        stop_poller()
         stop_master()
         stop_slave()
 

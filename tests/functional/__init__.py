@@ -221,7 +221,7 @@ def start_notifications(sleep=0.5):
 
     cmd = 'toxicnotifications'
     pidfile = 'toxicnotifications{}.pid'.format(PYVERSION)
-    cmd = ['export', 'PYTHONPATH="{}"'.format(SOURCE_DIR), '&&', 'python',
+    cmd = ['export', 'PYTHONPATH="{}"'.format(SOURCE_DIR), '&&',
            cmd, 'start', NOTIFICATIONS_ROOT_DIR, '--daemonize',
            '--pidfile', pidfile, '--loglevel', 'debug']
 
@@ -238,7 +238,7 @@ def stop_notifications():
     pidfile = 'toxicnotifications{}.pid'.format(PYVERSION)
 
     cmd = ['export', 'PYTHONPATH="{}"'.format(SOURCE_DIR), '&&',
-           'python', cmd, 'stop', NOTIFICATIONS_ROOT_DIR,
+           cmd, 'stop', NOTIFICATIONS_ROOT_DIR,
            '--pidfile', pidfile, '--kill']
 
     os.system(' '.join(cmd))

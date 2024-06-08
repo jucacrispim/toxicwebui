@@ -10,7 +10,7 @@ from selenium.common.exceptions import (
 )
 from selenium.webdriver.common.action_chains import ActionChains
 import undetected_chromedriver as uc
-from toxicbuild.core.utils import now, datetime2string
+from toxiccore.utils import now, datetime2string
 
 
 class SeleniumBrowserException(Exception):
