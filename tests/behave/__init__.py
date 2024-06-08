@@ -27,7 +27,7 @@ class SeleniumBrowser(uc.Chrome):
             "excludeSwitches", ["enable-automation"])
         options.add_experimental_option('useAutomationExtension', False)
         options.add_argument('--disable-blink-features=AutomationControlled')
-        kwargs['version_main'] = 102
+        kwargs['version_main'] = os.environ.get('CHROME_VERSION')
         super().__init__(*args, chrome_options=options, **kwargs)
         # self.maximize_window()
         self.implicitly_wait(10)
