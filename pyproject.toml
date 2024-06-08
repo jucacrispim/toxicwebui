@@ -41,3 +41,7 @@ include = ["toxicwebui"]
 
 [tool.setuptools.dynamic]
 version = {attr = "toxicwebui.__version__"}
+
+
+[project.scripts]
+toxicwebui = "toxicwebui.cmds:main"%
