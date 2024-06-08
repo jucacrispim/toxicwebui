@@ -29,7 +29,7 @@ builders:
 
 
   - name: Selenium
-    platform: python3.11
+    platform: docker-python3.11
     plugins:
       - name: apt-install
         packages:
