@@ -38,3 +38,4 @@ docs/source/apidoc/
 /ops/docker/poller.env
 /testdata/src/*
 /toxicwebui/static/toxicbuild/js/.tern-port
+.tern-port
