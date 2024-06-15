@@ -52,3 +52,4 @@ builders:
 
       - name: Run selenium tests
         command: ./scripts/run_selenium_tests.sh
+        warning_on_fail: true

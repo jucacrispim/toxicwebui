@@ -21,6 +21,8 @@ describe('RepositoryTest', function(){
     let window_spy = jasmine.createSpy();
     window_spy.TOXIC_API_URL = 'http://localhost:1234/';
     window = window_spy;
+    window.wsconsumer = jasmine.createSpy();
+    window.wsconsumer.connectTo = jasmine.createSpy();
     this.model = new Repository();
   });
 
@@ -196,7 +198,13 @@ describe('RepositoryTest', function(){
 describe('RepositoryListTest', function(){
 
   beforeEach(function(){
+    window.wsconsumer = jasmine.createSpy();
+    window.wsconsumer.connectTo = jasmine.createSpy();
+
     this.list = new RepositoryList();
+  });
+  afterEach(function(){
+    window.wsconsumer = null;
   });
 
   it('test-updateRepoStatus', function(){
@@ -215,6 +223,9 @@ describe('RepositoryListTest', function(){
 describe('BaseRepositoryViewTest', function(){
 
   beforeEach(function(){
+    window.wsconsumer = jasmine.createSpy();
+    window.wsconsumer.connectTo = jasmine.createSpy();
+
     affix('.template #repo-details-container #repo-details-name');
     let repo_details = 'input.repo-details-name+input.repo-details-url';
     repo_details += '+#repo-details-url+input.repo-parallel-builds';
@@ -595,6 +606,9 @@ describe('RepositoryDetailsViewTest', function(){
 describe('RepositoryListViewTest', function(){
 
   beforeEach(function(){
+    window.wsconsumer = jasmine.createSpy();
+    window.wsconsumer.connectTo = jasmine.createSpy();
+
     let infos = '.repository-info-name+.repository-info-status';
     infos += '+.buildset-commit+.buildset-title+.buildset-total-time';
     infos += '+.buildset-stated+.buildset-commit-date+.buildset-started';

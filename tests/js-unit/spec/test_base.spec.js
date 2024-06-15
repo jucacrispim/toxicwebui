@@ -426,9 +426,11 @@ describe('BaseBuildDetailsViewTest', function(){
     build.get = jasmine.createSpy();
     this.view.build = build;
     let steps = jasmine.createSpy();
-
+    steps.models = [];
+    this.view._addStep = jasmine.createSpy();
     this.view._add2StepQueue(steps);
     expect(this.view.build.get).not.toHaveBeenCalled();
+    expect(this.view._addStep).toHaveBeenCalled();
   });
 
   it('test-add2StepQueue-no-queue', function(){

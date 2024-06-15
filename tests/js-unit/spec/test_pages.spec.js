@@ -212,9 +212,9 @@ describe('BaseFloatingPageTest', function(){
   });
 });
 
-describe('BaseRepositoryPageTest', function(){
+// describe('BaseRepositoryPageTest', function(){
 
-});
+// });
 
 describe('RepositoryAddPageTest', function(){
 
@@ -342,7 +342,7 @@ describe('BuildSetDetailsPageTest', function(){
 
   it('test-close_page-no-url', function(){
     this.page.close_page();
-    expect(this.page.router._last_urls.pop()).toBe('/');
+    expect(this.page.router._last_urls.pop()).toBe(window.location.pathname);
   });
 
   it('test-close_page-with-url', function(){

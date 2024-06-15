@@ -23,7 +23,7 @@ describe('StreamConsumerTest', function(){
 
   it('test-secure-ws', function(){
     spyOn(window, 'getProto').and.returnValue('https:');
-    let consumer = new StreamConsumer();
+    var consumer = new StreamConsumer();
     expect(consumer.url.slice(0, 3)).toEqual('wss');
   });
 

@@ -58,6 +58,7 @@ describe('LoginTest', function(){
   it('test-doLogin-ok', async function(){
     spyOn(jQuery.fn, 'valid');
     jQuery.fn.valid.and.returnValue(true);
+    spyOn(jQuery, 'ajax').and.callFake(function(){return true;});
     let _location = jasmine.createSpy('location');
     _location.replace = jasmine.createSpy('replace');
     let r = await doLogin(_location);

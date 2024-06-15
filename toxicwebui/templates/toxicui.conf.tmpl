@@ -9,27 +9,27 @@ HOLE_PORT = int(os.environ.get('HOLE_PORT', 6666))
 HOLE_TOKEN = os.environ.get('HOLE_TOKEN', '{{HOLE_TOKEN}}')
 
 # pyrocumulus/tornado settings
-TORNADO_PORT = int(os.environ.get('UI_WEB_PORT', 8888))
+TORNADO_PORT = int(os.environ.get('WEBUI_PORT', 8888))
 TORNADO_OPTS = {
     'cookie_secret': os.environ.get('COOKIE_SECRET', '{{COOKIE_SECRET}}')
 }
 STATIC_URL = '/static/'
-STATIC_DIRS = [pkg_resources.resource_filename('toxicbuild.ui', 'static')]
-TEMPLATE_DIRS = [pkg_resources.resource_filename('toxicbuild.ui', 'templates')]
+STATIC_DIRS = [pkg_resources.resource_filename('toxicwebui', 'static')]
+TEMPLATE_DIRS = [pkg_resources.resource_filename('toxicwebui', 'templates')]
 
 COMMAND_PACKAGES = []
 
 
 APPLICATIONS = [
-    'toxicbuild.ui.web.static_app',
-    'toxicbuild.ui.web.api_app',
-    'toxicbuild.ui.web.app'
+    'toxicwebui.web.static_app',
+    'toxicwebui.web.api_app',
+    'toxicwebui.web.app'
 ]
 
 CONTEXT_PROCESSORS = [
     'pyrocumulus.web.template.ContextProcessor',
-    'toxicbuild.ui.context_processors.ToxicWebMainContextProcessor',
-    'toxicbuild.ui.context_processors.ToxicWebTranslationProcessor']
+    'toxicwebui.context_processors.ToxicWebMainContextProcessor',
+    'toxicwebui.context_processors.ToxicWebTranslationProcessor']
 
 
 API_URL = os.environ.get('WEB_API_URL', '/api/')

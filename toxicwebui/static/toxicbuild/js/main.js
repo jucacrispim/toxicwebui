@@ -32,7 +32,7 @@ function StreamConsumer(){
     handle_ws_info: function(event){
       var self = this;
       var data = jQuery.parseJSON(event.data);
-      e_type = data['event_type']
+      e_type = data['event_type'];
       utils.log(e_type);
       if (e_type == 'repo_status_changed'){
 	self.change_repo_status(data);
@@ -48,7 +48,7 @@ function StreamConsumer(){
                       'clone-exception': 'exception',
 		      'ready': 'success',
                       'warning': 'warning',
-                      'cloning': 'pending'}
+                      'cloning': 'pending'};
 
       var status = data.status;
       var new_class = 'btn-' + statuses[status];
