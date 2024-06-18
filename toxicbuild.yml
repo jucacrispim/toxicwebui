@@ -73,6 +73,7 @@ builders:
       - builder_name: Selenium
         statuses:
           - success
+          - warning
 
     plugins:
       - name: apt-install
