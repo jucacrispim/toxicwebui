@@ -53,3 +53,35 @@ builders:
       - name: Run selenium tests
         command: ./scripts/run_selenium_tests.sh
         warning_on_fail: true
+
+  - name: Docs
+    branches:
+      - master
+
+    platform: docker-python3.11
+    plugins:
+      - name: python-venv
+        pyversion: python3.11
+        extra_indexes:
+          - https://pypi.poraodojuca.dev
+
+    triggered_by:
+      - builder_name: Python
+        statuses:
+          - success
+
+      - builder_name: Selenium
+        statuses:
+          - success
+
+    plugins:
+      - name: apt-install
+        packages:
+          - curl
+    steps:
+
+      - name: Build docs
+        command: ./scripts/build_docs.sh
+
+      - name: upload docs
+        command: ./build-scripts/upload_docs.sh
