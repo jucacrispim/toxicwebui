@@ -59,11 +59,6 @@ builders:
       - master
 
     platform: docker-python3.11
-    plugins:
-      - name: python-venv
-        pyversion: python3.11
-        extra_indexes:
-          - https://pypi.poraodojuca.dev
 
     triggered_by:
       - builder_name: Python
@@ -80,6 +75,12 @@ builders:
         packages:
           - curl
           - make
+
+      - name: python-venv
+        pyversion: python3.11
+        extra_indexes:
+          - https://pypi.poraodojuca.dev
+
     steps:
 
       - name: Build docs
