@@ -54,7 +54,7 @@ builders:
         command: ./scripts/run_selenium_tests.sh
         warning_on_fail: true
 
-  - name: Docs
+  - name: Docs & release
     branches:
       - master
 
@@ -79,6 +79,7 @@ builders:
       - name: apt-install
         packages:
           - curl
+          - make
     steps:
 
       - name: Build docs
