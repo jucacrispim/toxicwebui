@@ -1,0 +1,7 @@
+recursive-include toxicwebui/templates *
+recursive-include toxicwebui/translations *
+recursive-include toxicwebui/static *
+
+recursive-exclude toxicbuildwebui/templates *~
+recursive-exclude toxicbuildwebui/transations *~
+recursive-exclude toxicbuildwebui/static *~

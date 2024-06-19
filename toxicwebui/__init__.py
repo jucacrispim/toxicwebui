@@ -21,7 +21,7 @@ web_translations = os.path.join(here, 'translations', 'web')
 locale.load_translations(web_translations)
 
 
-__version__ = '0.10.0'
+__version__ = '0.10.1'
 
 
 ENVVAR = 'TOXICWEBUI_SETTINGS'
