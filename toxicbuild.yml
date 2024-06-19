@@ -87,4 +87,4 @@ builders:
         command: ./scripts/build_docs.sh
 
       - name: upload docs
-        command: ./build-scripts/upload_docs.sh
+        command: ./scripts/upload_docs.sh
