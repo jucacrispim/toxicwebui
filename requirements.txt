@@ -22,3 +22,4 @@ flake8==6.0.0
 undetected-chromedriver==3.5.5
 sphinx==7.0.1
 sphinx_pdj_theme==0.4.0
+build==0.10.0

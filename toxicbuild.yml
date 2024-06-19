@@ -88,3 +88,6 @@ builders:
 
       - name: upload docs
         command: ./scripts/upload_docs.sh
+
+      - name: Release
+        command: ./scripts/release.sh
