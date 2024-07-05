@@ -46,7 +46,7 @@ pyrocommand = None
 @command
 def start(workdir, daemonize=False, stdout=LOGFILE, stderr=LOGFILE,
           pidfile=None, loglevel='info', conffile=None):
-    """ Starts the web interface.
+    """Start the web interface.
 
     Starts the build server to listen on the specified port for
     requests from addr (0.0.0.0 means everyone). Addr and port params
@@ -60,9 +60,8 @@ def start(workdir, daemonize=False, stdout=LOGFILE, stderr=LOGFILE,
     :param --loglevel: Level for logging messages. Defaults to `info`.
     :param -c, --conffile: path to config file. It must be relative
       to the workdir. Defaults to None. If not conffile, will look
-      for a file called ``toxicui.conf`` inside ``workdir``
+      for a file called ``toxicwebui.conf`` inside ``workdir``
     """
-
     global pyrocommand
 
     if not os.path.exists(workdir):
@@ -191,7 +190,7 @@ def create(root_dir, access_token='', output_token='', root_user_id='',
     template_dir = pkg_resources.resource_filename('toxicwebui',
                                                    'templates')
     template_file = os.path.join(template_dir, template_fname)
-    dest_file = os.path.join(root_dir, 'toxicui.conf')
+    dest_file = os.path.join(root_dir, 'toxicwebui.conf')
     shutil.copyfile(template_file, dest_file)
 
     cookie_secret = cookie_secret or bcrypt.gensalt(8).decode()
