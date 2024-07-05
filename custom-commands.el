@@ -73,6 +73,7 @@
 
 
 (defun toxic:--run-in-env-on-test-dir (toxic-cmd buffer-name)
+  (hack-local-variables)
 
   (let ((default-directory toxic:test-env-dir))
     (venv-workon toxic:original-venv-name)
@@ -347,13 +348,15 @@
 
   (defvar toxic:--webui-path nil)
   (setq toxic:--webui-path (concat toxic:test-env-path "webui/"))
-  (defvar toxic:--start-webui-cmd
-    (format "python %stoxicwebui/cmds.py start %s --loglevel=%s"
-	    pdj:project-directory toxic:--webui-path toxic:loglevel))
+
+  (defvar toxic:--start-webui-cmd nil)
+  (setq toxic:--start-webui-cmd
+    (format "python ./toxicwebui/cmds.py start %s --loglevel=%s"
+	    toxic:--webui-path toxic:loglevel))
 
   (defvar toxic:--webui-buffer-name "webui")
-  (toxic:--run-in-env-on-test-dir
-   toxic:--start-webui-cmd toxic:webui-buffer-name))
+  (let ((pdj:multi-term-switch-to-buffer nil))
+    (pdj:run-in-term toxic:--start-webui-cmd toxic:webui-buffer-name)))
 
 
 (defun toxic:stop-webui ()
@@ -431,64 +434,18 @@
   (setq toxic:--event-type (nth 1 event))
 
   (if (eq toxic:--event-type 'changed)
-      (if (string-match-p (regexp-quote "toxicbuild/master")
+      (if (string-match-p (regexp-quote "toxicwebui")
 			  toxic:--event-file)
-	  (toxic:restart-master)
-	(if (string-match-p (regexp-quote "toxicbuild/poller")
-			  toxic:--event-file)
-	    (toxic:restart-poller)
-	  (if (string-match-p (regexp-quote "toxicbuild/slave")
-			      toxic:--event-file)
-	      (toxic:restart-slave)
-	    (if (string-match-p (regexp-quote "toxicbuild/ui")
-				toxic:--event-file)
-		(toxic:restart-webui)
-	      (if (string-match-p (regexp-quote "toxicbuild/integrations")
-				  toxic:--event-file)
-		  (toxic:restart-integrations)
-		(if (string-match-p (regexp-quote "toxicbuild/notifications")
-				    toxic:--event-file)
-		    (toxic:restart-notifications)
-		  (if (string-match-p (regexp-quote "toxicbuild/secrets")
-				    toxic:--event-file)
-		    (toxic:restart-secrets))))))))))
+	  (toxic:restart-master))))
 
 
 (defun toxic:add-watcher ()
 
   (hack-local-variables)
 
-  (defvar toxic:--master-path nil)
-  (setq toxic:--master-path (concat pdj:project-directory
-				    "toxicbuild/master"))
-
-  (defvar toxic:--slave-path nil)
-  (setq toxic:--slave-path (concat pdj:project-directory
-				   "toxicbuild/slave"))
-
-  (defvar toxic:--integrations-path nil)
-  (setq toxic:--integrations-path (concat pdj:project-directory
-					  "toxicbuild/integrations"))
-
-  (defvar toxic:--notifications-path nil)
-  (setq toxic:--notifications-path (concat pdj:project-directory
-				    "toxicbuild/notifications"))
-
   (defvar toxic:--ui-path nil)
   (setq toxic:--ui-path (concat pdj:project-directory
-				    "toxicbuild/ui"))
-
-  (file-notify-add-watch toxic:--master-path '(change change)
-			 'toxic:fs-watcher)
-
-  (file-notify-add-watch toxic:--slave-path '(change change)
-			 'toxic:fs-watcher)
-
-  (file-notify-add-watch toxic:--integrations-path '(change change)
-			 'toxic:fs-watcher)
-
-  (file-notify-add-watch toxic:--notifications-path '(change change)
-			 'toxic:fs-watcher)
+				    "toxicwebui"))
 
   (file-notify-add-watch toxic:--ui-path '(change change)
 			 'toxic:fs-watcher))
@@ -665,4 +622,5 @@
 
 (when (string= (buffer-name) "pyproject.toml")
   (toxic:setup))
+
 (add-hook 'python-mode-hook 'toxic:setup)
