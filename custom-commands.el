@@ -344,8 +344,6 @@
 
   (interactive)
 
-  (hack-local-variables)
-
   (defvar toxic:--webui-path nil)
   (setq toxic:--webui-path (concat toxic:test-env-path "webui/"))
 
@@ -356,7 +354,7 @@
 
   (defvar toxic:--webui-buffer-name "webui")
   (let ((pdj:multi-term-switch-to-buffer nil))
-    (pdj:run-in-term toxic:--start-webui-cmd toxic:webui-buffer-name)))
+    (pdj:run-in-term-on-project-directory toxic:--start-webui-cmd toxic:webui-buffer-name)))
 
 
 (defun toxic:stop-webui ()
@@ -387,13 +385,13 @@
 
   (interactive)
 
+  (toxic:start-webui)
   (toxic:start-slave)
   (toxic:start-poller)
   (toxic:start-secrets)
   (toxic:start-master)
   (toxic:start-integrations)
-  (toxic:start-notifications)
-  (toxic:start-webui))
+  (toxic:start-notifications))
 
 
 (defun toxic:stop-all ()
@@ -415,13 +413,13 @@
 
   (interactive)
 
+  (toxic:restart-webui)
   (toxic:restart-slave)
   (toxic:restart-master)
   (toxic:restart-poller)
   (toxic:restart-secrets)
   (toxic:restart-integrations)
-  (toxic:restart-notifications)
-  (toxic:restart-webui))
+  (toxic:restart-notifications))
 
 
 (defun toxic:fs-watcher (event)
