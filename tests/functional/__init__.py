@@ -9,18 +9,13 @@ from unittest import TestCase
 
 import bcrypt
 from pyrocumulus.auth import AccessToken
+from mongomotor import connect
 
 from toxiccore import BaseToxicClient
 from toxiccore.utils import bcrypt_string, log
-from toxicmaster import create_settings_and_connect
-from toxicslave import create_settings
-from toxicpoller import create_settings as create_settings_poller
 from toxicwebui import create_settings as create_settings_ui
 
 from tests import TEST_DATA_DIR
-
-from toxicnotifications import (
-    create_settings_and_connect as create_settings_notif)
 
 
 SOURCE_DIR = os.path.join(TEST_DATA_DIR, '..')
@@ -31,6 +26,39 @@ POLLER_ROOT_DIR = TEST_DATA_DIR
 NOTIFICATIONS_ROOT_DIR = TEST_DATA_DIR
 SECRETS_ROOT_DIR = TEST_DATA_DIR
 PYVERSION = ''.join([str(n) for n in sys.version_info[:2]])
+
+# ---------------------------------------------------------------------------
+# Server binaries
+#
+# Each server runs on its own virtualenv so that dependency conflicts do not
+# affect each other (or the webui venv). The binary for a given server is
+# resolved in the following order:
+#   1. $TOXIC<PROJECT>_BIN        (explicit path, used on CI)
+#   2. ~/.virtualenvs/<project>-staging/bin/<cmd>   (local staging env)
+#   3. <cmd>                      (plain command on PATH)
+# ---------------------------------------------------------------------------
+
+
+def _venv_bin_dir(project):
+    return os.path.join(os.path.expanduser('~'), '.virtualenvs',
+                        '{}-staging'.format(project), 'bin')
+
+
+def _get_cmd(project, cmd):
+    """Returns the path of a server command, preferring a dedicated staging
+    virtualenv. See the module docstring above for the resolution order."""
+
+    envvar = 'TOXIC{}_BIN'.format(project.upper())
+    binpath = os.environ.get(envvar)
+    if binpath:
+        return os.path.expanduser(binpath)
+
+    full = os.path.join(_venv_bin_dir(project), cmd)
+    if os.path.exists(full):
+        return full
+
+    return cmd
+
 
 toxicmaster_conf = os.environ.get('TOXICMASTER_SETTINGS')
 if not toxicmaster_conf:
@@ -62,11 +90,65 @@ if not toxicwebui_conf:
     os.environ['TOXICWEBUI_SETTINGS'] = toxicwebui_conf
 
 
-create_settings()
-create_settings_and_connect()
-create_settings_notif()
-create_settings_poller()
 create_settings_ui()
+
+# The server processes (master, slave, poller, notifications, secrets) each
+# connect to the same test database using their own settings. Here we connect
+# to that same database so the tests can create/cleanup data without having to
+# import the server packages.
+DB_SETTINGS = {'host': os.environ.get('DBHOST', 'localhost'),
+               'port': 27017,
+               'db': os.environ.get('DBNAME', 'toxicnotifications-test')}
+connect(**DB_SETTINGS)
+
+
+def drop_test_data():
+    """Drops all collections of the test database, cleaning up data left by
+    the server processes.
+
+    Uses ``pymongo`` directly (not the mongomotor async connection) so it can
+    be called from any event loop -- the async client is bound to the loop it
+    was created on, which breaks when called from a different one.
+    """
+
+    from pymongo import MongoClient
+
+    client = MongoClient(host=DB_SETTINGS['host'], port=DB_SETTINGS['port'])
+    client.drop_database(DB_SETTINGS['db'])
+    client.close()
+
+
+async def create_root_user():
+    """Creates the root user in the master database, if it does not exist
+    yet.
+
+    The webui talks to the master through the hole and some operations
+    (like registering a new user) are made on behalf of the root user
+    (:attr:`toxicwebui.settings.ROOT_USER_ID`). The master refuses these
+    requests if that user does not exist, so we make sure it is there."""
+
+    from bson.objectid import ObjectId
+    from mongomotor.connection import get_connection
+    from toxicwebui import settings
+
+    conn = get_connection()
+    db = conn[DB_SETTINGS['db']]
+    coll = db['user']
+
+    doc = await coll.find_one({'_id': ObjectId(settings.ROOT_USER_ID)})
+    if doc:
+        return
+
+    await coll.insert_one({
+        '_id': ObjectId(settings.ROOT_USER_ID),
+        'email': 'root@toxictest.com',
+        'username': 'root',
+        'is_superuser': True,
+        'allowed_actions': ['add_user', 'add_repo', 'add_slave',
+                            'remove_user', 'remove_repo', 'remove_slave'],
+        'organizations': [],
+        'member_of': [],
+    })
 
 
 def start_slave(sleep=0.5):
@@ -74,10 +156,8 @@ def start_slave(sleep=0.5):
 
     toxicslave_conf = os.environ.get('TOXICSLAVE_SETTINGS')
     pidfile = 'toxicslave{}.pid'.format(PYVERSION)
-    toxicslave_cmd = 'toxicslave'
-    cmd = ['export', 'PYTHONPATH="{}"'.format(SOURCE_DIR), '&&',
-           toxicslave_cmd, 'start', SLAVE_ROOT_DIR, '--daemonize',
-           '--pidfile', pidfile, '--loglevel', 'debug']
+    cmd = [_get_cmd('slave', 'toxicslave'), 'start', SLAVE_ROOT_DIR,
+           '--daemonize', '--pidfile', pidfile, '--loglevel', 'debug']
 
     if toxicslave_conf:
         cmd += ['-c', toxicslave_conf]
@@ -88,10 +168,8 @@ def start_slave(sleep=0.5):
 def stop_slave():
     """Stops the test slave"""
 
-    toxicslave_cmd = 'toxicslave'
     pidfile = 'toxicslave{}.pid'.format(PYVERSION)
-    cmd = ['export', 'PYTHONPATH="{}"'.format(SOURCE_DIR), '&&',
-           toxicslave_cmd, 'stop', SLAVE_ROOT_DIR,
+    cmd = [_get_cmd('slave', 'toxicslave'), 'stop', SLAVE_ROOT_DIR,
            '--pidfile', pidfile, '--kill']
 
     os.system(' '.join(cmd))
@@ -101,10 +179,8 @@ def start_poller():
 
     toxicpoller_conf = os.environ.get('TOXICPOLLER_SETTINGS')
     pidfile = 'toxicpoller{}.pid'.format(PYVERSION)
-    toxicpoller_cmd = 'toxicpoller'
-    cmd = ['export', 'PYTHONPATH="{}"'.format(SOURCE_DIR), '&&',
-           toxicpoller_cmd, 'start', POLLER_ROOT_DIR, '--daemonize',
-           '--pidfile', pidfile, '--loglevel', 'debug']
+    cmd = [_get_cmd('poller', 'toxicpoller'), 'start', POLLER_ROOT_DIR,
+           '--daemonize', '--pidfile', pidfile, '--loglevel', 'debug']
 
     if toxicpoller_conf:
         cmd += ['-c', toxicpoller_conf]
@@ -114,18 +190,17 @@ def start_poller():
 
 def stop_poller():
 
-    toxicpoller_cmd = 'toxicpoller'
+    toxicpoller_cmd = _get_cmd('poller', 'toxicpoller')
     pidfile = 'toxicpoller{}.pid'.format(PYVERSION)
-    cmd = ['export', 'PYTHONPATH="{}"'.format(SOURCE_DIR), '&&',
-           'python', toxicpoller_cmd, 'stop', POLLER_ROOT_DIR,
+    cmd = [toxicpoller_cmd, 'stop', POLLER_ROOT_DIR,
            '--pidfile', pidfile, '--kill']
 
     os.system(' '.join(cmd))
 
 
 def wait_master_to_be_alive(root_dir):
-    from toxicmaster import settings
-    HOST = settings.HOLE_ADDR
+    from toxicwebui import settings
+    HOST = settings.HOLE_HOST
     PORT = settings.HOLE_PORT
     alive = False
     limit = int(os.environ.get('FUNCTESTS_MASTER_START_TIMEOUT', 20))
@@ -146,7 +221,7 @@ def wait_master_to_be_alive(root_dir):
             i += step
 
     if not alive:
-        log(f'Master did not start at {HOST}:{PORT} in {limit} seconds',
+        log(f"Master did not start at {HOST}: {PORT} in {limit} seconds",
             level='error')
         logfile = os.path.join(root_dir, 'toxicmaster.log')
         os.system(f'tail --lines 100 {logfile}')
@@ -157,11 +232,9 @@ def start_master(sleep=0.5):
 
     toxicmaster_conf = os.environ.get('TOXICMASTER_SETTINGS')
 
-    toxicmaster_cmd = 'toxicmaster'
     pidfile = 'toxicmaster{}.pid'.format(PYVERSION)
-    cmd = ['export', 'PYTHONPATH="{}"'.format(SOURCE_DIR), '&&',
-           toxicmaster_cmd, 'start', MASTER_ROOT_DIR, '--daemonize',
-           '--pidfile', pidfile, '--loglevel', 'debug']
+    cmd = [_get_cmd('master', 'toxicmaster'), 'start', MASTER_ROOT_DIR,
+           '--daemonize', '--pidfile', pidfile, '--loglevel', 'debug']
 
     if toxicmaster_conf:
         cmd += ['-c', toxicmaster_conf]
@@ -174,11 +247,9 @@ def start_master(sleep=0.5):
 def stop_master():
     """Stops the master test server"""
 
-    toxicmaster_cmd = 'toxicmaster'
     pidfile = 'toxicmaster{}.pid'.format(PYVERSION)
 
-    cmd = ['export', 'PYTHONPATH="{}"'.format(SOURCE_DIR), '&&',
-           toxicmaster_cmd, 'stop', MASTER_ROOT_DIR,
+    cmd = [_get_cmd('master', 'toxicmaster'), 'stop', MASTER_ROOT_DIR,
            '--pidfile', pidfile, '--kill']
 
     os.system(' '.join(cmd))
@@ -189,11 +260,9 @@ def start_secrets(sleep=0.5):
 
     toxicsecrets_conf = os.environ.get('TOXICSECRETS_SETTINGS')
 
-    toxicsecrets_cmd = 'toxicsecrets'
     pidfile = 'toxicsecrets{}.pid'.format(PYVERSION)
-    cmd = ['export', 'PYTHONPATH="{}"'.format(SOURCE_DIR), '&&',
-           toxicsecrets_cmd, 'start', SECRETS_ROOT_DIR, '--daemonize',
-           '--pidfile', pidfile, '--loglevel', 'debug']
+    cmd = [_get_cmd('secrets', 'toxicsecrets'), 'start', SECRETS_ROOT_DIR,
+           '--daemonize', '--pidfile', pidfile, '--loglevel', 'debug']
 
     if toxicsecrets_conf:
         cmd += ['-c', toxicsecrets_conf]
@@ -204,11 +273,9 @@ def start_secrets(sleep=0.5):
 def stop_secrets():
     """Stops the secrets test server"""
 
-    toxicsecrets_cmd = 'toxicsecrets'
     pidfile = 'toxicsecrets{}.pid'.format(PYVERSION)
 
-    cmd = ['export', 'PYTHONPATH="{}"'.format(SOURCE_DIR), '&&',
-           toxicsecrets_cmd, 'stop', SECRETS_ROOT_DIR,
+    cmd = [_get_cmd('secrets', 'toxicsecrets'), 'stop', SECRETS_ROOT_DIR,
            '--pidfile', pidfile, '--kill']
 
     os.system(' '.join(cmd))
@@ -219,10 +286,9 @@ def start_notifications(sleep=0.5):
 
     conf = os.path.join(NOTIFICATIONS_ROOT_DIR, 'toxicnotifications.conf')
 
-    cmd = 'toxicnotifications'
     pidfile = 'toxicnotifications{}.pid'.format(PYVERSION)
-    cmd = ['export', 'PYTHONPATH="{}"'.format(SOURCE_DIR), '&&',
-           cmd, 'start', NOTIFICATIONS_ROOT_DIR, '--daemonize',
+    cmd = [_get_cmd('notifications', 'toxicnotifications'),
+           'start', NOTIFICATIONS_ROOT_DIR, '--daemonize',
            '--pidfile', pidfile, '--loglevel', 'debug']
 
     if conf:
@@ -234,11 +300,10 @@ def start_notifications(sleep=0.5):
 def stop_notifications():
     """Stops the toxicnotifications test server"""
 
-    cmd = 'toxicnotifications'
     pidfile = 'toxicnotifications{}.pid'.format(PYVERSION)
 
-    cmd = ['export', 'PYTHONPATH="{}"'.format(SOURCE_DIR), '&&',
-           cmd, 'stop', NOTIFICATIONS_ROOT_DIR,
+    cmd = [_get_cmd('notifications', 'toxicnotifications'),
+           'stop', NOTIFICATIONS_ROOT_DIR,
            '--pidfile', pidfile, '--kill']
 
     os.system(' '.join(cmd))

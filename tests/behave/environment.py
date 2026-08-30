@@ -2,12 +2,8 @@
 
 import asyncio
 import os
-from toxiccore.utils import log
-from toxicmaster import create_settings_and_connect
-from toxicslave import create_settings
+from toxiccore.utils import log, bcrypt_string
 from toxicwebui import create_settings as create_settings_ui
-from toxicnotifications import (
-    create_settings_and_connect as create_settings_output)
 from tests.functional import (REPO_DIR,
                               SLAVE_ROOT_DIR, MASTER_ROOT_DIR,
                               TEST_DATA_DIR,
@@ -32,20 +28,10 @@ if not toxicweb_conf:
     toxicweb_conf = os.path.join(TEST_DATA_DIR, 'toxicwebui.conf')
     os.environ['TOXICWEBUI_SETTINGS'] = toxicweb_conf
 
-toxicoutput_conf = os.environ.get('TOXICOUTPUT_SETTINGS')
-if not toxicoutput_conf:
-    toxicoutput_conf = os.path.join(NOTIFICATIONS_ROOT_DIR, 'toxicoutput.conf')
-    os.environ['TOXICOUTPUT_SETTINGS'] = toxicoutput_conf
-
-create_settings()
 create_settings_ui()
-create_settings_and_connect()
-create_settings_output()
 
 from pyrocumulus.auth import AccessToken  # noqa f402
-from toxiccommon.exchanges import scheduler_action, conn  # noqa f402
 from toxicwebui import settings  # noqa f402
-from toxicmaster.users import User  # noqa f402
 from toxiccommon.interfaces import (  # noqa 402
     SlaveInterface, RepositoryInterface, BaseInterface)
 from tests.functional import (start_slave, stop_slave,  # noqa 402
@@ -54,14 +40,88 @@ from tests.functional import (start_slave, stop_slave,  # noqa 402
                               start_notifications, stop_notifications,
                               start_webui, stop_webui,
                               start_secrets, stop_secrets,
+                              drop_test_data,
                               REPO_DIR)
 from tests.behave import SeleniumBrowser  # noqa 402
+
+# The async mongo client (and the whole suite) is bound to a single event
+# loop created in tests/__init__.py. We reuse that same loop in all hooks,
+# otherwise the mongomotor connection raises "Cannot use AsyncMongoClient in
+# different event loop" and the after_feature cleanup never runs (leaving
+# duplicated slaves/repos behind).
+from tests import loop as _loop  # noqa 402
+asyncio.set_event_loop(_loop)
 
 
 BaseInterface.settings = settings
 
 HERE = os.path.dirname(__file__)
 BUILD_SCRIPTS_DIR = os.path.join(HERE, '..', '..', 'build-scripts')
+
+
+class Requester:
+    """A minimal requester for the interfaces. The master identifies the
+    user through its ``id`` (the same way the webui does when talking to
+    the master through the hole)."""
+
+    def __init__(self, id, email='someguy@bla.com'):
+        self.id = id
+        self.email = email
+
+
+async def get_db():
+    from mongomotor.connection import get_connection
+    conn = get_connection()
+    return conn[os.environ.get('DBNAME', 'toxicnotifications-test')]
+
+
+async def create_user(context):
+    """Creates the ``someguy`` user directly in the master database and
+    stores a lightweight requester in the context."""
+
+    import bcrypt
+    from bson.objectid import ObjectId
+
+    db = await get_db()
+    coll = db['user']
+    password = bcrypt_string('123', bcrypt.gensalt(8))
+    user_id = ObjectId()
+    await coll.insert_one({
+        '_id': user_id,
+        'email': 'someguy@bla.com',
+        'username': 'someguy',
+        'password': password,
+        'is_superuser': True,
+        'allowed_actions': ['add_user', 'add_repo', 'add_slave',
+                            'remove_user', 'remove_repo', 'remove_slave'],
+        'organizations': [],
+        'member_of': [],
+    })
+    context.user = Requester(user_id)
+
+
+async def del_user(context):
+    db = await get_db()
+    await db['user'].delete_many({'username': 'someguy'})
+
+
+async def create_root_user(context):
+    from bson.objectid import ObjectId
+
+    db = await get_db()
+    coll = db['user']
+    doc = await coll.find_one({'_id': ObjectId(settings.ROOT_USER_ID)})
+    if doc:
+        return
+
+    await coll.insert_one({
+        '_id': ObjectId(settings.ROOT_USER_ID),
+        'email': 'nobody@nowhere.nada',
+        'username': 'already-exists',
+        'allowed_actions': ['add_user'],
+        'organizations': [],
+        'member_of': [],
+    })
 
 
 def create_browser(context):
@@ -96,12 +156,8 @@ async def create_slave(context):
 async def del_slave(context):
     """Deletes the slaves created in the tests"""
 
-    slaves = await SlaveInterface.list(context.user)
-    for slave in slaves:
-        try:
-            await slave.delete()
-        except Exception as e:
-            log('Error deleting slave ' + str(e), level='warning')
+    db = await get_db()
+    await db['slave'].delete_many({})
 
 
 async def del_auth_token(context):
@@ -110,10 +166,6 @@ async def del_auth_token(context):
 
 async def create_repo(context):
     """Creates a new repo to be used in tests"""
-
-    from toxicmaster import settings as master_settings
-    await conn.connect(**master_settings.RABBITMQ_CONNECTION)
-    await scheduler_action.declare()
 
     repo = await RepositoryInterface.add(
         context.user,
@@ -125,44 +177,21 @@ async def create_repo(context):
     await repo.add_branch('master', False)
 
 
-async def create_user(context):
-    user = User(email='someguy@bla.com', is_superuser=True)
-    user.set_password('123')
-    await user.save()
-    context.user = user
-    context.user.id = str(context.user.id)
-
-
-async def del_user(context):
-    await context.user.delete()
-
-
 async def del_repo(context):
     """Deletes the repositories created in tests."""
 
-    repos = await RepositoryInterface.list(context.user)
-    for repo in repos:
-        try:
-            await repo.delete()
-            # await scheduler_action.declare()
-            # await scheduler_action.queue_delete()
-            # await scheduler_action.connection.disconnect()
-        except Exception as e:
-            log('Error deleting repo ' + str(e), level='warning')
-
-    from toxicmaster.repository import Repository as RepoModel
-
-    await RepoModel.drop_collection()
-
-
-async def create_root_user(context):
-    user = User(id=settings.ROOT_USER_ID, username='already-exists',
-                email='nobody@nowhere.nada', allowed_actions=['add_user'])
-    await user.save(force_insert=True)
+    db = await get_db()
+    await db['repository'].delete_many({})
 
 
 def before_all(context):
     if not os.environ.get('TEST_DOCKER_IMAGES'):
+        # Clean the test database so we always start with a fresh state.
+        # Without this, re-running the suite leaves duplicated users/slaves
+        # behind and the login/`slave_get` calls fail with
+        # ``MultipleObjectsReturned``.
+        drop_test_data()
+
         start_slave()
         start_poller()
         start_notifications()
@@ -175,7 +204,7 @@ def before_all(context):
     async def create(context):
         await create_user(context)
 
-    loop = asyncio.get_event_loop()
+    loop = _loop
     loop.run_until_complete(create(context))
 
 
@@ -201,7 +230,7 @@ def before_feature(context, feature):
         elif fname == 'register.feature':
             await create_root_user(context)
 
-    loop = asyncio.get_event_loop()
+    loop = _loop
     loop.run_until_complete(create(context))
 
 
@@ -217,10 +246,8 @@ def after_feature(context, feature):
         await del_slave(context)
         await del_repo(context)
         await del_auth_token(context)
-        await User.objects(username='already-exists').delete()
-        await User.objects(username='already-existsa-good-username').delete()
 
-    loop = asyncio.get_event_loop()
+    loop = _loop
     loop.run_until_complete(delete(context))
 
 
@@ -250,7 +277,7 @@ def after_all(context):
     async def delete(context):
         await del_user(context)
 
-    loop = asyncio.get_event_loop()
+    loop = _loop
     loop.run_until_complete(delete(context))
 
     quit_browser(context)

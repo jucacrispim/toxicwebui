@@ -11,7 +11,7 @@ from selenium.common.exceptions import (
 )
 from selenium.webdriver.common.action_chains import ActionChains
 import undetected_chromedriver as uc
-from toxiccore.utils import now, datetime2string
+from datetime import datetime
 
 
 class SeleniumBrowserException(Exception):
@@ -29,10 +29,45 @@ class SeleniumBrowser(uc.Chrome):
         options.add_experimental_option('useAutomationExtension', False)
         options.add_argument('--disable-blink-features=AutomationControlled')
         options.add_argument('--disable-dev-shm-usage')
-        kwargs['version_main'] = int(os.environ.get('CHROME_VERSION', 102))
+        # Let undetected_chromedriver auto-detect the installed Chrome version
+        # unless CHROME_VERSION is explicitly set (e.g. on CI). We pass the
+        # major version so undetected_chromedriver fetches a compatible
+        # chromedriver instead of the latest one (which may not match the
+        # installed browser).
+        version_main = os.environ.get('CHROME_VERSION')
+        if not version_main:
+            version_main = self._get_chrome_major_version()
+        if version_main:
+            kwargs['version_main'] = int(version_main)
         super().__init__(*args, chrome_options=options, **kwargs)
         # self.maximize_window()
         self.implicitly_wait(10)
+
+    def _get_chrome_major_version(self):
+        """Detects the major version of the installed Chrome/Chromium.
+
+        :returns: A string with the major version (e.g. '151') or None
+          if it can't be detected."""
+        try:
+            import shutil
+            import subprocess
+            exe = None
+            for name in ['google-chrome', 'google-chrome-stable', 'chromium',
+                         'chromium-browser', 'chrome']:
+                exe = shutil.which(name)
+                if exe:
+                    break
+            if not exe:
+                return None
+            output = subprocess.check_output([exe, '--version']).decode()
+            # e.g. 'Google Chrome 151.0.7922.173 ...' or
+            # 'Chromium 151.0.7922.173 ...'
+            for part in output.split():
+                if part[0].isdigit():
+                    return part.split('.')[0]
+        except Exception:
+            pass
+        return None
 
     def click(self, element):
         """Clicks in a element using ActionChains.
@@ -44,7 +79,7 @@ class SeleniumBrowser(uc.Chrome):
 
     def _get_screenshot_filename(self):
         ts = str(int(time.time()))
-        dt = datetime2string(now(), dtformat='%Y/%m/%d')
+        dt = datetime.utcnow().strftime('%Y/%m/%d')
         fname = '{}.png'.format(ts)
         return dt, fname
 

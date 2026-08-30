@@ -193,7 +193,17 @@ class StreamConnectorTest(TestCase):
         inst._connected = True
         inst.client = MagicMock()
 
-        inst.client.get_response = AsyncMock(return_value={})
+        async def wait():
+            await asyncio.sleep(0.5)
+            inst._connected = False
+
+        asyncio.ensure_future(wait())
+
+        async def gr():
+            await asyncio.sleep(0.1)
+            return {}
+
+        inst.client.get_response = gr
         await inst._listen()
         self.assertFalse(connectors.message_arrived.send.called)
 

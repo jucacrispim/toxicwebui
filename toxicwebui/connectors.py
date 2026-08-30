@@ -103,7 +103,7 @@ class StreamConnector(LoggerMixin):
             if body is None:
                 self.log('Bad data from stream. Skipping',
                          level='warning')
-                break
+                continue
 
             repo_id = self._get_repo_id(body)
             event = body.get('event_type')

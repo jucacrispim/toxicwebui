@@ -18,8 +18,8 @@
 
 # pylint: disable=all
 
+import importlib.resources
 import os
-import pkg_resources
 import shutil
 import sys
 
@@ -117,11 +117,13 @@ def start(workdir, daemonize=False, stdout=LOGFILE, stderr=LOGFILE,
 
 
 @command
-def stop(workdir, pidfile=None):
+def stop(workdir, pidfile=None, conffile=None):
     """ Stops the web interface.
 
     :param workdir: Work directory for the ui to be killed.
     :param --pidfile: pid file for the process.
+    :param -c, --conffile: path to config file. It must be relative
+      to the workdir. Defaults to None.
     """
 
     global pyrocommand
@@ -134,9 +136,15 @@ def stop(workdir, pidfile=None):
     with changedir(workdir):
         sys.path.append(workdir)
 
-        os.environ['TOXICUI_SETTINGS'] = os.path.join(workdir,
-                                                      'toxicui.conf')
-        os.environ['PYROCUMULUS_SETTINGS_MODULE'] = 'toxicui'
+        if conffile:
+            os.environ['TOXICUI_SETTINGS'] = os.path.join(workdir, conffile)
+            module = conffile.replace('.conf', '').replace(
+                workdir, '').strip('/').replace(os.sep, '.')
+            os.environ['PYROCUMULUS_SETTINGS_MODULE'] = module
+        else:
+            os.environ['TOXICUI_SETTINGS'] = os.path.join(workdir,
+                                                          'toxicui.conf')
+            os.environ['PYROCUMULUS_SETTINGS_MODULE'] = 'toxicui'
 
         create_settings()
         from toxicwebui import settings
@@ -187,8 +195,8 @@ def create(root_dir, access_token='', output_token='', root_user_id='',
     os.makedirs(root_dir)
 
     template_fname = 'toxicui.conf.tmpl'
-    template_dir = pkg_resources.resource_filename('toxicwebui',
-                                                   'templates')
+    template_dir = importlib.resources.files(
+        'toxicmaster').joinpath('templates')
     template_file = os.path.join(template_dir, template_fname)
     dest_file = os.path.join(root_dir, 'toxicwebui.conf')
     shutil.copyfile(template_file, dest_file)

@@ -21,6 +21,13 @@ os.environ['PYROCUMULUS_SETTINGS_MODULE'] = 'testdata.toxicwebui'
 
 create_settings()
 
+loop = asyncio.new_event_loop()
+# Make this the current event loop so the async mongo connection created on
+# import (tests.functional) is bound to the same loop used by the behave
+# hooks. Otherwise we get "Cannot use AsyncMongoClient in different event
+# loop".
+asyncio.set_event_loop(loop)
+
 
 def patch():
     from toxicwebui import settings
@@ -33,7 +40,7 @@ patch()
 def async_test(f):
 
     def wrapper(*args, **kwargs):
-        loop = asyncio.get_event_loop()
+        asyncio.set_event_loop(loop)
         loop.run_until_complete(f(*args, **kwargs))
 
     return wrapper

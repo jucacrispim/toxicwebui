@@ -18,9 +18,9 @@ readme = "README.md"
 
 dependencies = [
     'tornado==6.3.2',
-    'pyrocumulus==0.12.4',
-    'toxiccore>=0.11.0',
-    'toxiccommon>=0.10.0',
+    'pyrocumulus==0.12.8',
+    'toxiccore==0.13.3',
+    'toxiccommon==0.12.0',
 ]
 
 classifiers = [

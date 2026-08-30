@@ -19,11 +19,7 @@
 import json
 from unittest import TestCase
 import requests
-from pyrocumulus.auth import AccessToken
-from toxicmaster.repository import Repository as RepoDBModel
-from toxicmaster.slave import Slave as SlaveDBModel
-from toxicmaster.users import User as UserDBModel
-from toxicnotifications.base import Notification
+
 from toxicwebui import settings
 from tests import async_test
 from tests.functional import (
@@ -38,6 +34,8 @@ from tests.functional import (
     stop_secrets,
     start_slave,
     stop_slave,
+    drop_test_data,
+    create_root_user,
 )
 
 
@@ -57,12 +55,19 @@ def tearDownModule():
     stop_notifications()
 
 
-def _do_login():
-    session = requests.session()
-    url = settings.LOGIN_URL
-    session.post(url, data=json.dumps({
-        'username_or_email': 'a@a.com',
-        'password': '123'}))
+def _register_user(session):
+    """Registers a new user through the public api and returns the session.
+
+    The registration handler sets a login cookie, so the session is already
+    authenticated after this call.
+    """
+
+    url = settings.API_URL + 'public/user/'
+    # the username is 'a' (from a@a.com) because the repo tests reference
+    # repositories by their full name '<username>/<name>' (e.g. 'a/somerepo')
+    data = json.dumps({'email': 'a@a.com', 'username': 'a',
+                       'password': '123'})
+    session.post(url, data=data)
     return session
 
 
@@ -70,15 +75,13 @@ class UserRestAPITest(TestCase):
 
     @async_test
     async def setUp(self):
-        self.user = UserDBModel(email='a@a.com',
-                                allowed_actions=['add_repo', 'add_slave'])
-        self.user.set_password('123')
-        await self.user.save()
-        self.session = _do_login()
+        await create_root_user()
+        self.session = requests.session()
+        _register_user(self.session)
 
     @async_test
     async def tearDown(self):
-        await UserDBModel.drop_collection()
+        await drop_test_data()
         self.session.close()
 
     @async_test
@@ -89,30 +92,32 @@ class UserRestAPITest(TestCase):
 
         self.session.post(url + 'change-password', data=json.dumps(data))
 
-        r = await type(self.user).authenticate('a@a.com', '456')
-        self.assertTrue(r)
+        # authenticates with the new password through the login endpoint
+        session = requests.session()
+        r = session.post(settings.LOGIN_URL, data=json.dumps({
+            'username_or_email': 'a@a.com',
+            'password': '456'}))
+        session.close()
+        self.assertEqual(r.status_code, 200)
 
 
 class RepositoryRestAPITest(TestCase):
 
     @async_test
     async def setUp(self):
-        self.user = UserDBModel(email='a@a.com',
-                                allowed_actions=['add_repo', 'add_slave'])
-        self.user.set_password('123')
-        await self.user.save()
+        await create_root_user()
         self.session = requests.session()
-        self.slave = SlaveDBModel(name='someslave', host='localhost',
-                                  port=1234, use_ssl=False,
-                                  owner=self.user, token='some-token')
-        await self.slave.save()
-        self.session = _do_login()
+        _register_user(self.session)
+        # a slave is created through the rest api so it can be linked
+        # to a repository in the tests below
+        url = settings.SLAVE_API_URL
+        data = {'name': 'someslave', 'host': 'localhost',
+                'port': 1234, 'use_ssl': False, 'token': 'some-token'}
+        self.session.post(url, data=json.dumps(data))
 
     @async_test
     async def tearDown(self):
-        await RepoDBModel.drop_collection()
-        await UserDBModel.drop_collection()
-        await SlaveDBModel.drop_collection()
+        await drop_test_data()
         self.session.close()
 
     def test_repo_add(self):
@@ -262,16 +267,13 @@ class SlaveRestAPITest(TestCase):
 
     @async_test
     async def setUp(self):
-        self.user = UserDBModel(email='a@a.com',
-                                allowed_actions=['add_repo', 'add_slave'])
-        self.user.set_password('123')
-        await self.user.save()
-        self.session = _do_login()
+        await create_root_user()
+        self.session = requests.session()
+        _register_user(self.session)
 
     @async_test
     async def tearDown(self):
-        await UserDBModel.drop_collection()
-        await SlaveDBModel.drop_collection()
+        await drop_test_data()
         self.session.close()
 
     def test_slave_add(self):
@@ -300,20 +302,15 @@ class NotificationRestApiTest(TestCase):
     @async_test
     async def setUp(self):
 
+        await create_root_user()
         await create_output_access_token()
-        # login
-        self.user = UserDBModel(email='a@a.com',
-                                allowed_actions=['add_repo', 'add_slave'])
-        self.user.set_password('123')
-        await self.user.save()
-
-        self.session = _do_login()
+        self.session = requests.session()
+        _register_user(self.session)
 
     @async_test
     async def tearDown(self):
-        await UserDBModel.drop_collection()
-        await AccessToken.drop_collection()
-        await Notification.drop_collection()
+        await drop_test_data()
+        self.session.close()
 
     def test_enable(self):
         url = settings.NOTIFICATION_API_URL + 'custom-webhook/some-id'
