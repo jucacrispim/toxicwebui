@@ -81,7 +81,7 @@ class UserRestAPITest(TestCase):
 
     @async_test
     async def tearDown(self):
-        await drop_test_data()
+        drop_test_data()
         self.session.close()
 
     @async_test
@@ -117,7 +117,7 @@ class RepositoryRestAPITest(TestCase):
 
     @async_test
     async def tearDown(self):
-        await drop_test_data()
+        drop_test_data()
         self.session.close()
 
     def test_repo_add(self):
@@ -273,7 +273,7 @@ class SlaveRestAPITest(TestCase):
 
     @async_test
     async def tearDown(self):
-        await drop_test_data()
+        drop_test_data()
         self.session.close()
 
     def test_slave_add(self):
@@ -309,7 +309,7 @@ class NotificationRestApiTest(TestCase):
 
     @async_test
     async def tearDown(self):
-        await drop_test_data()
+        drop_test_data()
         self.session.close()
 
     def test_enable(self):
