@@ -29,6 +29,9 @@ class SeleniumBrowser(uc.Chrome):
         options.add_experimental_option('useAutomationExtension', False)
         options.add_argument('--disable-blink-features=AutomationControlled')
         options.add_argument('--disable-dev-shm-usage')
+        options.add_argument('--disable-gpu')
+        options.add_argument('--no-zygote')
+        options.add_argument('--window-size=1920,1080')
         # Let undetected_chromedriver auto-detect the installed Chrome version
         # unless CHROME_VERSION is explicitly set (e.g. on CI). We pass the
         # major version so undetected_chromedriver fetches a compatible
