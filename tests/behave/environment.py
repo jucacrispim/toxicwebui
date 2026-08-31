@@ -2,12 +2,11 @@
 
 import asyncio
 import os
-from toxiccore.utils import log, bcrypt_string
+from toxiccore.utils import bcrypt_string
 from toxicwebui import create_settings as create_settings_ui
 from tests.functional import (REPO_DIR,
                               SLAVE_ROOT_DIR, MASTER_ROOT_DIR,
                               TEST_DATA_DIR,
-                              NOTIFICATIONS_ROOT_DIR,
                               create_output_access_token)
 
 # settings needed to the test data. This needs to be before the
