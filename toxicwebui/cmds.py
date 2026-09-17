@@ -196,7 +196,7 @@ def create(root_dir, access_token='', output_token='', root_user_id='',
 
     template_fname = 'toxicui.conf.tmpl'
     template_dir = importlib.resources.files(
-        'toxicmaster').joinpath('templates')
+        'toxicwebui').joinpath('templates')
     template_file = os.path.join(template_dir, template_fname)
     dest_file = os.path.join(root_dir, 'toxicwebui.conf')
     shutil.copyfile(template_file, dest_file)

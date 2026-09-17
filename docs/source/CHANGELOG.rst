@@ -1,6 +1,11 @@
 Changelog
 =========
 
+* v0.11.1
+
+  - Fix ``create`` to read the config template from the ``toxicwebui``
+    package instead of ``toxicmaster``
+
 * v0.11.0
 
   - Migrated `toxicwebui` from HTTP transport to TCP for notifications using
