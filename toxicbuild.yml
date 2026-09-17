@@ -32,7 +32,7 @@ builders:
 
 
   - name: Selenium
-    platform: docker-python3.11
+    platform: docker-python3.13
     plugins:
       - name: apt-install
         packages:
@@ -41,7 +41,7 @@ builders:
           - psmisc
 
       - name: python-venv
-        pyversion: python3.11
+        pyversion: python3.13
         extra_indexes:
           - https://pypi.poraodojuca.dev
 
