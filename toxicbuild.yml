@@ -64,7 +64,7 @@ builders:
     branches:
       - master
 
-    platform: docker-python3.11
+    platform: docker-python3.12
 
     triggered_by:
       - builder_name: Python
@@ -83,7 +83,7 @@ builders:
           - make
 
       - name: python-venv
-        pyversion: python3.11
+        pyversion: python3.12
         extra_indexes:
           - https://pypi.poraodojuca.dev
 
