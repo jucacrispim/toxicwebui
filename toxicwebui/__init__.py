@@ -12,7 +12,7 @@ here = os.path.dirname(os.path.abspath(__file__))
 # translations for cli
 cli_translations = os.path.join(here, 'translations')
 gettext.install('toxicwebui', cli_translations)
-t = gettext.translation('toxicwebui', cli_translations)
+t = gettext.translation('toxicwebui', cli_translations, fallback=True)
 translate = t.gettext
 
 
