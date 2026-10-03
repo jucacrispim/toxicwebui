@@ -836,19 +836,35 @@ class DashboardHandler(LoggedTemplateHandler):
                                    self.request, {})
         return rendered
 
+    def _get_import_url(self, import_url):
+        """Builds an import url binding the current user to the oauth state.
+
+        The user id is embedded (and signed) in the ``state`` param so the
+        integrations service can identify the user without relying on the
+        cookie.
+
+        :param import_url: The import url template, possibly containing a
+          ``{state}`` placeholder.
+        """
+
+        if not import_url:
+            return '#'
+
+        secret = settings.TORNADO_OPTS['cookie_secret']
+        user_id = str(self.user.id) if self.user else None
+        val = create_validation_string(secret, user_id)
+        return import_url.format(state=val)
+
     def _get_gitlab_import_url(self):
         gitlab_import_url = getattr(settings, 'GITLAB_IMPORT_URL', None)
-        if gitlab_import_url:
-            secret = settings.TORNADO_OPTS['cookie_secret']
-            val = create_validation_string(secret)
-            gitlab_import_url = gitlab_import_url.format(state=val)
-        else:
-            gitlab_import_url = '#'
+        return self._get_import_url(gitlab_import_url)
 
-        return gitlab_import_url
+    def _get_github_import_url(self):
+        github_import_url = getattr(settings, 'GITHUB_IMPORT_URL', None)
+        return self._get_import_url(github_import_url)
 
     def _get_settings_template(self, settings_type):
-        github_import_url = getattr(settings, 'GITHUB_IMPORT_URL', '#')
+        github_import_url = self._get_github_import_url()
         gitlab_import_url = self._get_gitlab_import_url()
         bitbucket_import_url = getattr(settings, 'BITBUCKET_IMPORT_URL', '#')
         rendered = render_template(
@@ -861,7 +877,7 @@ class DashboardHandler(LoggedTemplateHandler):
 
     def _get_settings_main_template(self, settings_type):
         if settings_type == 'repositories':
-            github_import_url = getattr(settings, 'GITHUB_IMPORT_URL', '#')
+            github_import_url = self._get_github_import_url()
             gitlab_import_url = self._get_gitlab_import_url()
             bitbucket_import_url = getattr(
                 settings, 'BITBUCKET_IMPORT_URL', '#')
